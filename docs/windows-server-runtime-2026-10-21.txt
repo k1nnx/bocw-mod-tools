@@ -1,0 +1,438 @@
+
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║  T9 DemonWare Emulator Server                       ║
+║  Black Ops Cold War — Offline Mode                  ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║  Player:  LocalTester                               
+║  UserID:  1337133713371337                            ║
+║  Bind:    127.0.0.1                                 
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+
+  ── Prototype limitations ──
+  [local] Services are configured to listen only on 127.0.0.1
+  [unverified] Proxy interception and game authentication are not verified by this server
+  [unverified] Does not establish that no game traffic reaches official servers
+
+  WARNING: Remove all modifications and verify files with Steam before official play.
+
+[2m2026-10-21T19:36:13.241422Z[0m [32m INFO[0m [2mt9_server[0m[2m:[0m Starting all services...
+[2m2026-10-21T19:36:13.243273Z[0m [32m INFO[0m [2mt9_server::stun[0m[2m:[0m [stun] STUN server listening on 127.0.0.1:3074
+[2m2026-10-21T19:36:13.243287Z[0m [32m INFO[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Lobby server listening on 127.0.0.1:3200
+[2m2026-10-21T19:36:13.243295Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Login service listening on 127.0.0.1:3100
+[2m2026-10-21T19:36:13.243294Z[0m [32m INFO[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Umbrella server listening on 127.0.0.1:3300
+  ── Services ──
+  ● Auth / Login Service (TCP) :3100
+[2m2026-10-21T19:36:13.450201Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58746
+  ● Lobby Server (TCP) :3200
+  ? STUN Server (UDP :3074, not probed)
+[2m2026-10-21T19:36:13.450512Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58747
+[2m2026-10-21T19:36:13.450716Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+  ● Umbrella (TCP) :3300
+[2m2026-10-21T19:36:13.450858Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+
+  ── Prototype DW service handlers (not game-verified) ──
+  ·   4 bdStats
+  ·   8 bdProfiles
+  ·  12 bdTitleUtilities
+  ·  15 bdKeyArchive
+  ·  18 bdBandwidthTest
+  ·  23 bdCounter
+  ·  27 bdDML
+  ·  28 bdGroup
+[2m2026-10-21T19:36:13.450994Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+  ·  38 bdAnticheat (unverified stub)
+  ·  52 bdTags
+  ·  58 bdPooledStorage
+  ·  67 bdEventLog
+  ·  68 bdRichPresence
+  ·  80 bdMarketplace
+  ·  95 bdPublisherVariables
+  · 104 bdMarketingComms
+  · 125 bdUNK125
+  · 193 bdObjectStore
+  · 195 bdLootGeneration
+
+  Server is running. Press Ctrl+C to stop.
+  Start the game with the proxy DLL installed to connect.
+
+[2m2026-10-21T19:36:13.451495Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:36:13.452196Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:36:13.452244Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:36:13.452288Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:36:13.452333Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:36:13.452419Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:36:13.452466Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:36:13.452526Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:36:13.452631Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:36:13.452694Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:36:13.452738Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:36:13.452781Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:36:13.452841Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:36:13.452914Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:36:13.452996Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:36:13.453043Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:36:13.453122Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58747
+[2m2026-10-21T19:36:13.453300Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:58748
+[2m2026-10-21T19:37:08.269935Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58760
+[2m2026-10-21T19:37:08.270363Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /v1/login/steam/?titleID=27551&client=pc HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:37:08.270576Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Login service REST request
+[2m2026-10-21T19:37:08.271347Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:58761
+[2m2026-10-21T19:37:08.294336Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Request: GET /synthetic HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:37:08.294863Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] IP discovery from 127.0.0.1:51421
+[2m2026-10-21T19:37:08.295303Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] NAT discovery from 127.0.0.1:51422
+[2m2026-10-21T19:37:08.295760Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58763
+[2m2026-10-21T19:37:08.295916Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:37:08.295993Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:37:08.296052Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:37:08.296100Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:37:08.296149Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:37:08.296197Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:37:08.296247Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:37:08.296301Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:37:08.296348Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:37:08.296443Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:37:08.296493Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:37:08.296534Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:37:08.296581Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:37:08.296624Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:37:08.296666Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:37:08.296711Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:37:08.296755Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:37:08.296801Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:37:08.296846Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:37:08.296914Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_header_ack (0xC8)
+[2m2026-10-21T19:37:08.296981Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_header_ack
+[2m2026-10-21T19:37:08.297111Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_auth (0x82)
+[2m2026-10-21T19:37:08.297183Z[0m [34mDEBUG[0m [2mt9_server::crypto[0m[2m:[0m [crypto] Derived keys after 3 handshake packet(s)
+[2m2026-10-21T19:37:08.297233Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_auth_done
+[2m2026-10-21T19:37:08.297328Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58763
+[2m2026-10-21T19:37:08.297538Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58764
+[2m2026-10-21T19:37:08.297647Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:37:08.297702Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:37:08.297747Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:37:08.297793Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:37:08.297846Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:37:08.297894Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:37:08.297935Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:37:08.297979Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:37:08.298024Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:37:08.298067Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:37:08.298109Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:37:08.298156Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:37:08.298198Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:37:08.298245Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:37:08.298296Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:37:08.298353Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:37:08.298405Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:37:08.298446Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:37:08.298493Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:37:08.310471Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Error handling packet from 127.0.0.1:58764: buffer underflow: tried to read past end
+[2m2026-10-21T19:37:08.430965Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Expected 0xAB, got 0x0
+[2m2026-10-21T19:37:09.184344Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58764
+[2m2026-10-21T19:37:09.184726Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58765
+[2m2026-10-21T19:37:09.184883Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /auth/ HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:37:09.184977Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:37:31.767596Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58776
+[2m2026-10-21T19:37:31.768050Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:58778
+[2m2026-10-21T19:37:31.768116Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58777
+[2m2026-10-21T19:37:31.768443Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:37:31.768596Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:37:31.768666Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:37:31.768729Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:37:31.768783Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:37:31.768834Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:37:31.768882Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:37:31.768932Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:37:31.768982Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:37:31.769029Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:37:31.769077Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:37:31.769129Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:37:31.769179Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:37:31.769233Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:37:31.769290Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:37:31.769401Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:37:31.769465Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:37:31.769517Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:37:31.769565Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:37:31.769621Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58777
+[2m2026-10-21T19:38:24.253022Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58789
+[2m2026-10-21T19:38:24.253606Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:58791
+[2m2026-10-21T19:38:24.253643Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58790
+[2m2026-10-21T19:38:24.254057Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:38:24.254265Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:38:24.254432Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:38:24.254524Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:38:24.254600Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:38:24.254666Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:38:24.254737Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:38:24.254832Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:38:24.254991Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:38:24.255075Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:38:24.255134Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:38:24.255185Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:38:24.255240Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:38:24.255287Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:38:24.255333Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:38:24.255385Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:38:24.255434Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:38:24.255481Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:38:24.255530Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:38:24.255613Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58790
+[2m2026-10-21T19:39:18.908874Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58840
+[2m2026-10-21T19:39:18.909871Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /v1/login/steam/?titleID=27551&client=pc HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:39:18.910174Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Login service REST request
+[2m2026-10-21T19:39:18.910790Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:58841
+[2m2026-10-21T19:39:18.910978Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Request: GET /synthetic HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:39:18.911250Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] IP discovery from 127.0.0.1:50692
+[2m2026-10-21T19:39:18.911564Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] NAT discovery from 127.0.0.1:50693
+[2m2026-10-21T19:39:18.911899Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58842
+[2m2026-10-21T19:39:18.911992Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:39:18.912059Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:39:18.912107Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:39:18.912156Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:39:18.912202Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:39:18.912247Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:39:18.912292Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:39:18.912337Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:39:18.912387Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:39:18.912441Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:39:18.912504Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:39:18.913461Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:39:18.913577Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:39:18.913640Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:39:18.913689Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:39:18.913738Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:39:18.913800Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:39:18.913847Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:39:18.913893Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:39:18.929766Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_header_ack (0xC8)
+[2m2026-10-21T19:39:18.930052Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_header_ack
+[2m2026-10-21T19:39:18.930293Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_auth (0x82)
+[2m2026-10-21T19:39:18.930368Z[0m [34mDEBUG[0m [2mt9_server::crypto[0m[2m:[0m [crypto] Derived keys after 3 handshake packet(s)
+[2m2026-10-21T19:39:18.930421Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_auth_done
+[2m2026-10-21T19:39:18.930546Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58842
+[2m2026-10-21T19:39:18.930823Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:58843
+[2m2026-10-21T19:39:18.930979Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:39:18.931042Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:39:18.931093Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:39:18.931141Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:39:18.931186Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:39:18.931235Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:39:18.931278Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:39:18.931321Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:39:18.931364Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:39:18.931407Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:39:18.931450Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:39:18.931492Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:39:18.931535Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:39:18.931578Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:39:18.931622Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:39:18.931668Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:39:18.931715Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:39:18.931757Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:39:18.931800Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:39:18.944939Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Error handling packet from 127.0.0.1:58843: buffer underflow: tried to read past end
+[2m2026-10-21T19:39:19.065404Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Expected 0xAB, got 0x0
+[2m2026-10-21T19:39:19.819716Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:58843
+[2m2026-10-21T19:39:19.820285Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58844
+[2m2026-10-21T19:39:19.835221Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /auth/ HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:39:19.835480Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:39:20.598018Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58845
+[2m2026-10-21T19:39:20.613210Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: POST /auth/ HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Content-Length: 57
+
+{"title_id":"27551","iv_seed":"1","identity":"synthetic"}
+[2m2026-10-21T19:39:20.613505Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:39:21.378232Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58846
+[2m2026-10-21T19:39:21.382038Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: POST /auth/ HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Content-Length: 57
+
+
+[2m2026-10-21T19:39:21.382188Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:39:21.498492Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: {"title_id":"27551","iv_seed":"1","identity":"synthetic"}
+[2m2026-10-21T19:39:21.498832Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Sent auth response to 127.0.0.1:58846
+[2m2026-10-21T19:39:21.499328Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:58847
+[2m2026-10-21T19:39:21.518145Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request:   
+[2m2026-10-21T19:43:35.062140Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52686
+[2m2026-10-21T19:43:35.062754Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:52687
+[2m2026-10-21T19:43:35.062754Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:52688
+[2m2026-10-21T19:43:35.063067Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:43:35.063337Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:43:35.063411Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:43:35.063465Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:43:35.063514Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:43:35.063599Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:43:35.063769Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:43:35.063864Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:43:35.064004Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:43:35.064134Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:43:35.064279Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:43:35.064376Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:43:35.064465Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:43:35.064540Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:43:35.064714Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:43:35.064898Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:43:35.065055Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:43:35.065203Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:43:35.065345Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:43:35.065600Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:52687
+[2m2026-10-21T19:43:57.471370Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52693
+[2m2026-10-21T19:43:57.471772Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:52695
+[2m2026-10-21T19:43:57.471959Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:52694
+[2m2026-10-21T19:43:57.472248Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:43:57.472361Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:43:57.472461Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:43:57.472624Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:43:57.472699Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:43:57.472767Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:43:57.472841Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:43:57.472915Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:43:57.472984Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:43:57.473068Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:43:57.473156Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:43:57.473232Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:43:57.473322Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:43:57.473402Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:43:57.473470Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:43:57.473556Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:43:57.473614Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:43:57.473660Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:43:57.473712Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:43:57.473768Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:52694
+[2m2026-10-21T19:48:01.261839Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52745
+[2m2026-10-21T19:48:01.262115Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /v1/login/steam/?titleID=27551&client=pc HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:48:01.262223Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Login service REST request
+[2m2026-10-21T19:48:01.262798Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:52746
+[2m2026-10-21T19:48:01.275890Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Request: GET /synthetic HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:48:01.276261Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] IP discovery from 127.0.0.1:59161
+[2m2026-10-21T19:48:01.276632Z[0m [34mDEBUG[0m [2mt9_server::stun[0m[2m:[0m [stun] NAT discovery from 127.0.0.1:59162
+[2m2026-10-21T19:48:01.277391Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:52747
+[2m2026-10-21T19:48:01.277520Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:48:01.277591Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:48:01.277637Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:48:01.277682Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:48:01.277729Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:48:01.277778Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:48:01.277832Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:48:01.277880Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:48:01.277925Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:48:01.277975Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:48:01.278018Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:48:01.278066Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:48:01.278114Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:48:01.278158Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:48:01.278206Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:48:01.278255Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:48:01.278304Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:48:01.278377Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:48:01.278516Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:48:01.278635Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_header_ack (0xC8)
+[2m2026-10-21T19:48:01.278700Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_header_ack
+[2m2026-10-21T19:48:01.278882Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Received client_auth (0x82)
+[2m2026-10-21T19:48:01.278955Z[0m [34mDEBUG[0m [2mt9_server::crypto[0m[2m:[0m [crypto] Derived keys after 3 handshake packet(s)
+[2m2026-10-21T19:48:01.279010Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Sending server_auth_done
+[2m2026-10-21T19:48:01.279130Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:52747
+[2m2026-10-21T19:48:01.279363Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:52748
+[2m2026-10-21T19:48:01.279463Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:48:01.279517Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:48:01.279565Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:48:01.279613Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:48:01.279666Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:48:01.279708Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:48:01.279750Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:48:01.279791Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:48:01.279840Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:48:01.279881Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:48:01.279925Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:48:01.279975Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:48:01.280017Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:48:01.280058Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:48:01.280100Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:48:01.280146Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:48:01.280187Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:48:01.280230Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:48:01.280270Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:48:01.290861Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Error handling packet from 127.0.0.1:52748: buffer underflow: tried to read past end
+[2m2026-10-21T19:48:01.411228Z[0m [33m WARN[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Expected 0xAB, got 0x0
+[2m2026-10-21T19:48:06.417143Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:52748
+[2m2026-10-21T19:48:06.417628Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52752
+[2m2026-10-21T19:48:06.432370Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: GET /auth/ HTTP/1.1
+Host: localhost
+
+
+[2m2026-10-21T19:48:06.432689Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:48:11.443729Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52753
+[2m2026-10-21T19:48:11.458881Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: POST /auth/ HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Content-Length: 57
+
+{"title_id":"27551","iv_seed":"1","identity":"synthetic"}
+[2m2026-10-21T19:48:11.459177Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:48:16.471681Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52754
+[2m2026-10-21T19:48:16.471965Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: POST /auth/ HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Content-Length: 57
+
+
+[2m2026-10-21T19:48:16.472062Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Auth endpoint hit, waiting for JSON body
+[2m2026-10-21T19:48:16.592273Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request: {"title_id":"27551","iv_seed":"1","identity":"synthetic"}
+[2m2026-10-21T19:48:16.592601Z[0m [32m INFO[0m [2mt9_server::auth[0m[2m:[0m [auth] Sent auth response to 127.0.0.1:52754
+[2m2026-10-21T19:48:16.593241Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52755
+[2m2026-10-21T19:48:16.610719Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Request:   
+[2m2026-10-21T19:49:00.863269Z[0m [34mDEBUG[0m [2mt9_server::auth[0m[2m:[0m [auth] Connection from 127.0.0.1:52768
+[2m2026-10-21T19:49:00.867142Z[0m [34mDEBUG[0m [2mt9_server::umbrella[0m[2m:[0m [umbrella] Connection from 127.0.0.1:52770
+[2m2026-10-21T19:49:00.867194Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection from 127.0.0.1:52769
+[2m2026-10-21T19:49:00.867565Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdStats (id=4)
+[2m2026-10-21T19:49:00.867724Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdProfiles (id=8)
+[2m2026-10-21T19:49:00.867884Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTitleUtilities (id=12)
+[2m2026-10-21T19:49:00.867963Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdKeyArchive (id=15)
+[2m2026-10-21T19:49:00.868021Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdBandwidthTest (id=18)
+[2m2026-10-21T19:49:00.868081Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdCounter (id=23)
+[2m2026-10-21T19:49:00.868128Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdDML (id=27)
+[2m2026-10-21T19:49:00.868175Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdGroup (id=28)
+[2m2026-10-21T19:49:00.868225Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdAnticheat (id=38)
+[2m2026-10-21T19:49:00.868271Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdTags (id=52)
+[2m2026-10-21T19:49:00.868316Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPooledStorage (id=58)
+[2m2026-10-21T19:49:00.868363Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdEventLog (id=67)
+[2m2026-10-21T19:49:00.868416Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdRichPresence (id=68)
+[2m2026-10-21T19:49:00.868470Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketplace (id=80)
+[2m2026-10-21T19:49:00.868529Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdPublisherVariables (id=95)
+[2m2026-10-21T19:49:00.868590Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdMarketingComms (id=104)
+[2m2026-10-21T19:49:00.868718Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdUNK125 (id=125)
+[2m2026-10-21T19:49:00.868884Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdObjectStore (id=193)
+[2m2026-10-21T19:49:00.868965Z[0m [34mDEBUG[0m [2mt9_server::services[0m[2m:[0m [services] Registered service bdLootGeneration (id=195)
+[2m2026-10-21T19:49:00.869028Z[0m [34mDEBUG[0m [2mt9_server::lobby[0m[2m:[0m [lobby] Connection closed: 127.0.0.1:52769

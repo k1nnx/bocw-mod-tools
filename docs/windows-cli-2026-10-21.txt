@@ -1,0 +1,147 @@
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' doctor
+Read-only install diagnostics
+  Game directory: C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War
+Mod Status
+────────────────────────────────────────
+  Status: MODS ACTIVE
+  Active mods:
+    - no_weapon_rarities
+  Modified files:
+    - zone\zm_common.ff
+  Applied at: 2026-10-21T17:31:48.991632+00:00
+
+  Remove mods and proxy, then verify game files before official play.
+  WARNING: Game-local XINPUT9_1_0.dll (no .bak): review before launch
+  MODIFIED: Differs from backup: zone\zm_common.ff
+  Game running: No
+  t9-proxy.log exists: a proxy ran here at some point (not proof it is running now).
+  To check the original game files, use Steam > Properties > Installed Files > Verify integrity.
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' status
+Mod Status
+────────────────────────────────────────
+  Status: MODS ACTIVE
+  Active mods:
+    - no_weapon_rarities
+  Modified files:
+    - zone\zm_common.ff
+  Applied at: 2026-10-21T17:31:48.991632+00:00
+
+  Remove mods and proxy, then verify game files before official play.
+  WARNING: Game-local XINPUT9_1_0.dll (no .bak): review before launch
+  MODIFIED: Differs from backup: zone\zm_common.ff
+  Game running: No
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' info
+BOCW Mod Tools
+══════════════════════════════════════════════════
+  Game dir:  C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War
+  Zone dir:  C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War\zone
+  Oodle DLL: Found
+  Zone files: 92
+    multiplayer: 24
+    core: 28
+    zombies: 40
+
+  Mods active: YES (1 mods)
+  WARNING: Remove modifications, then verify files before official play!
+  WARNING: Game-local XInput DLL detected; run 'doctor'.
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' server status
+Server Status
+────────────────────────────────────────
+  ● Auth (login service) (port 3100)
+  ● Lobby (port 3200)
+  ? STUN (UDP) (UDP port 3074; not checked via TCP)
+  ● Umbrella (port 3300)
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' proxy status
+Proxy DLL Status
+────────────────────────────────────────
+  XINPUT9_1_0.dll exists (1334784 bytes)
+  Status: GAME-LOCAL DLL (no original backup)
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' verify
+No backup manifest found. Run 'doctor' to inspect tracked modifications.
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' inspect zm_common
+Zone File Info
+──────────────────────────────────────────────────
+  File:        C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War\zone\zm_common.ff
+  Size:        23446592 bytes
+  FF Version:  0x64
+  Compression: oodle_kraken
+  Platform:    3 (encrypted: false)
+  Zone name:   zm_common
+  Decompressed: 121188103 bytes (115.6 MB)
+  Blocks:      463
+  Header chunks: 9
+    0x39cb44f1  4 bytes
+    0x2c2381cf  5 bytes
+    0x37f9d612  64 bytes
+    0x8578c004  264 bytes
+    0x0f992dfe  24 bytes
+    0x66c65056  104 bytes
+    0x6aebb196  104 bytes
+    0x1ce68f50  440 bytes
+    0xc7708cda  336 bytes
+  Builder:     TA-BM-SV-T9-25
+
+  XFile block sizes:
+    [ 0] temp               0x2e40 (11.6 KB)
+    [ 1] temp_preload       0x113de28 (17655.5 KB)
+    [ 2] rt_virtual         0x4208 (16.5 KB)
+    [ 4] virtual            0x3fea9a0 (65450.4 KB)
+    [ 6] physical           0x22edec0 (35767.7 KB)
+    [ 7] streamer           0x13dfff4e0 (5210109.2 KB)
+    [ 8] streamer_cpu       0x1df83038 (491020.1 KB)
+    [11] tmp_preload_ptr    0x26a570 (2473.4 KB)
+    [12] mesh               0xfd8d0 (1014.2 KB)
+
+exit=0
+
+> C:\Users\john\Downloads\forked\bocw-mod-tools\target\debug\bocw_mod_tools.exe --game-dir 'C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War' inspect ww_zm_tungsten
+Zone File Info
+──────────────────────────────────────────────────
+  File:        C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War\zone\ww_zm_tungsten.ff
+  Size:        100224 bytes
+  FF Version:  0x64
+  Compression: oodle_kraken
+  Platform:    3 (encrypted: false)
+  Zone name:   ww_zm_tungsten
+  Decompressed: 938020 bytes (0.9 MB)
+  Blocks:      1
+  Header chunks: 9
+    0x39cb44f1  4 bytes
+    0x2c2381cf  6 bytes
+    0x37f9d612  64 bytes
+    0x8578c004  264 bytes
+    0x0f992dfe  24 bytes
+    0x66c65056  104 bytes
+    0x6aebb196  104 bytes
+    0x1ce68f50  480 bytes
+    0xc7708cda  336 bytes
+  Builder:     TA-BM-SV-T9-13
+
+  XFile block sizes:
+    [ 0] temp               0xe50 (3.6 KB)
+    [ 1] temp_preload       0x481d0 (288.5 KB)
+    [ 2] rt_virtual         0x284 (0.6 KB)
+    [ 4] virtual            0x89050 (548.1 KB)
+    [ 6] physical           0x201d8 (128.5 KB)
+    [ 7] streamer           0x155570 (1365.4 KB)
+    [11] tmp_preload_ptr    0xd450 (53.1 KB)
+
+exit=0

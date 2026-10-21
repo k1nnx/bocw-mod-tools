@@ -1,0 +1,20 @@
+Opening C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War\zone\zm_common.ff...
+Decompressing...
+Decompressed: 121188103 bytes
+Found 'weapon_rarity_map_list' 0 time(s) in decompressed data
+
+Recompressing (Oodle Kraken)...
+Original:     23446592 bytes
+Recompressed: 23446592 bytes
+Ratio:        100.0%
+
+Verifying recompressed file:
+  Magic:   0x46464154
+  Version: 0x64
+  Compression: oodle_kraken
+  FF name: zm_common
+
+Re-decompressing to verify round-trip...
+PASS: Round-trip decompression matches exactly!
+
+Done!

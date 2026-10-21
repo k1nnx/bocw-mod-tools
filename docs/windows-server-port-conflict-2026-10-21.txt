@@ -1,0 +1,59 @@
+
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║  T9 DemonWare Emulator Server                       ║
+║  Black Ops Cold War — Offline Mode                  ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║  Player:  LocalTester                               
+║  UserID:  1337133713371337                            ║
+║  Bind:    127.0.0.1                                 
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+
+  ── Prototype limitations ──
+  [local] Services are configured to listen only on 127.0.0.1
+  [unverified] Proxy interception and game authentication are not verified by this server
+  [unverified] Does not establish that no game traffic reaches official servers
+
+  WARNING: Remove all modifications and verify files with Steam before official play.
+
+[2m2026-10-21T19:50:38.155435Z[0m [32m INFO[0m [2mt9_server[0m[2m:[0m Starting all services...
+[2m2026-10-21T19:50:38.156362Z[0m [31mERROR[0m [2mt9_server[0m[2m:[0m Login service error: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
+[2m2026-10-21T19:50:38.156397Z[0m [31mERROR[0m [2mt9_server[0m[2m:[0m STUN server error: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
+[2m2026-10-21T19:50:38.156381Z[0m [31mERROR[0m [2mt9_server[0m[2m:[0m Lobby server error: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
+[2m2026-10-21T19:50:38.156382Z[0m [31mERROR[0m [2mt9_server[0m[2m:[0m Umbrella server error: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
+  ── Services ──
+  ● Auth / Login Service (TCP) :3100
+  ● Lobby Server (TCP) :3200
+  ? STUN Server (UDP :3074, not probed)
+  ● Umbrella (TCP) :3300
+
+  ── Prototype DW service handlers (not game-verified) ──
+  ·   4 bdStats
+  ·   8 bdProfiles
+  ·  12 bdTitleUtilities
+  ·  15 bdKeyArchive
+  ·  18 bdBandwidthTest
+  ·  23 bdCounter
+  ·  27 bdDML
+  ·  28 bdGroup
+  ·  38 bdAnticheat (unverified stub)
+  ·  52 bdTags
+  ·  58 bdPooledStorage
+  ·  67 bdEventLog
+  ·  68 bdRichPresence
+  ·  80 bdMarketplace
+  ·  95 bdPublisherVariables
+  · 104 bdMarketingComms
+  · 125 bdUNK125
+  · 193 bdObjectStore
+  · 195 bdLootGeneration
+
+  Server is running. Press Ctrl+C to stop.
+  Start the game with the proxy DLL installed to connect.
+
+[2m2026-10-21T19:50:38.361551Z[0m [31mERROR[0m [2mt9_server[0m[2m:[0m Umbrella server exited: Ok(())
+
+second_server_exit=0

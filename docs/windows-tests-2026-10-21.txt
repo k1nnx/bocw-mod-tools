@@ -1,0 +1,128 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src\lib.rs (target\debug\deps\bocw_mod_tools-7615e14b28ac0062.exe)
+
+running 18 tests
+test mod_manager::tests::finds_unresolved_markers ... ok
+test mod_manager::tests::gsc_strings_are_escaped ... ok
+test mod_manager::tests::patch_conditions ... ok
+test zone::tests::unsupported_zones_are_refused ... ok
+test zone::tests::corrupt_block_chains_are_rejected ... ok
+test zone::tests::compressed_round_trip_with_boundaries ... ok
+test zone::tests::header_round_trip ... ok
+test zone::tests::uncompressed_zone_stays_uncompressed ... ok
+test zone::tests::patched_zone_round_trip ... ok
+test mod_manager::tests::mod_menu_escapes_text_and_refresh_terminates ... ok
+test mod_manager::tests::sample_mod_matches_current_schemas ... ok
+test backup::tests::rejects_paths_outside_game_install ... ok
+test mod_manager::tests::scripts_build_through_substitute_link_guard ... ok
+test backup::tests::existing_backup_remains_original_after_patch ... ok
+test backup::tests::failed_restore_keeps_state_for_retry ... ok
+test backup::tests::inspect_detects_game_local_dll_and_modified_zone ... ok
+test zone::tests::default_layout_round_trip ... ok
+test zone::tests::every_alignment_near_a_boundary_round_trips ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src\bin\analyze_rarity.rs (target\debug\deps\analyze_rarity-b70e2dbaf2ede52d.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\apply_no_rarity.rs (target\debug\deps\apply_no_rarity-85920b55f0d574eb.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\bocw_mod_tools-56725358a52fb0ee.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\hexdump.rs (target\debug\deps\hexdump-fde59f0d9e7b6765.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\test_patch_pipeline.rs (target\debug\deps\test_patch_pipeline-f8cc3a07b747af3d.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\test_recompress.rs (target\debug\deps\test_recompress-488d596e01c0d2d6.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\apply_pipeline.rs (target\debug\deps\apply_pipeline-90cf3ead7369d02c.exe)
+
+running 1 test
+test apply_follows_options_and_clean_restores ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests\cli_safety.rs (target\debug\deps\cli_safety-cec8e56631acc165.exe)
+
+running 2 tests
+test proxy_install_does_not_create_a_false_original_backup ... ok
+test unbacked_dll_is_reported_but_never_removed ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running unittests src\lib.rs (target\debug\deps\t9_common-846627975bb22a45.exe)
+
+running 2 tests
+test dw_protocol::tests::demonware_host_matching_is_suffix_based ... ok
+test dw_protocol::tests::local_services_have_distinct_ports ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\t9_proxy-ab20fbbf210c38fc.exe)
+
+running 5 tests
+test routing::tests::implemented_services_are_redirected ... ok
+test routing::tests::markers_round_trip_to_the_emulator_port ... ok
+test routing::tests::only_markers_are_rewritten ... ok
+test routing::tests::unimplemented_demonware_hosts_are_blocked ... ok
+test routing::tests::unrelated_hosts_pass_through ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\t9_server-190d877b147dfee5.exe)
+
+running 13 tests
+test auth::tests::ticket_layout_is_128_bytes ... ok
+test crypto::tests::keys_are_required_before_crypto ... ok
+test auth::tests::other_api_paths_get_generic_success ... ok
+test lobby::tests::zero_size_packet_gets_zero_reply ... ok
+test lobby::tests::client_auth_completes_handshake ... ok
+test auth::tests::auth3_json_request_is_answered ... ok
+test auth::tests::rest_login_points_lsg_at_local_lobby ... ok
+test lobby::tests::header_ack_gets_server_header_ack ... ok
+test crypto::tests::encrypt_decrypt_round_trip ... ok
+test lobby::tests::connections_do_not_share_crypto_state ... ok
+test lobby::tests::encrypted_service_call_is_dispatched ... ok
+test stun::tests::discovery_responses_echo_the_peer_address ... ok
+test lobby::tests::service_call_before_auth_is_ignored ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests bocw_mod_tools
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests t9_common
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+exit=0

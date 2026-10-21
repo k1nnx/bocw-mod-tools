@@ -1,0 +1,4 @@
+# Preserve captured runtime logs byte-for-byte, including embedded CRLF and ANSI.
+docs/windows-server-runtime-2026-10-21.txt -text -whitespace
+docs/windows-server-port-conflict-2026-10-21.txt -text -whitespace
+docs/windows-prior-game-proxy-2026-10-21.txt -text -whitespace

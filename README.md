@@ -20,6 +20,8 @@ Status as of **2026-10-21**:
 
 The most important limitation is documented in [`docs/connection-diagnostics.md`](docs/connection-diagnostics.md): compiling and passing tests does not establish that the game works or that traffic cannot reach official services.
 
+**Windows testing handoff (2026-10-21):** [`docs/windows-client-handoff-2026-10-21.md`](docs/windows-client-handoff-2026-10-21.md) contains Windows build/test transcripts, a reproducible localhost smoke client, real-Oodle round-trip results, the prior game proxy log, game-install metadata for agents without the game, and prioritized next steps. The game itself was not launched in that test session.
+
 ## Workspace layout
 
 ```text

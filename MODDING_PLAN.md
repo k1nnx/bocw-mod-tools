@@ -1,0 +1,10 @@
+# Black Ops Cold War test plan (Windows, 2026-10-21)
+
+Full evidence, host/version details, safety decisions, install-only file inventory, and reproducible tests: [`docs/windows-client-handoff-2026-10-21.md`](docs/windows-client-handoff-2026-10-21.md).
+
+- Steam install: `C:\Program Files (x86)\Steam\steamapps\common\Call of Duty Black Ops Cold War`, app ID `1985810`, installed Steam build ID **23222070**; game executable native x64 (the `um scan` .NET label is a false positive from `reportcodbug.exe`). Exe's version field is `1.0.0.0`, not a useful patch version.
+- Saves/config: `C:\Users\john\Documents\Call of Duty Black Ops Cold War`. Game-local prior proxy log: `t9-proxy.log`; new synthetic server debug trace is under `docs/`. Game binary, Oodle DLL, and fastfile hashes are listed in the handoff; none are redistributed.
+- Online / anti-cheat: offline compatibility unproven; scanner detected no protection in the install but this is not a safety guarantee. Modified install + old game-local proxy + possible uncovered network APIs means **do not launch online with mods**. No real game launch was performed.
+- Community route currently under evaluation: this repo's experimental Rust TAFF/Oodle tools plus XInput proxy and localhost emulator. There is no verified in-game loader/script injection or successful local authentication. Prefer synthetic data, read-only zone inspection, isolated temp-file round trips, and localhost service tests until real-game isolation is guaranteed.
+- Lab: leave installed `.ff`, old proxy, and `.bocw_backups` untouched. The game-local DLL has no `.bak` and `verify` has no manifest; the backup is not proven stock. If game validation is later approved, prepare a reversible copy and independently enforce no outbound network access before using the proxy; record exact hashes and processes.
+- Next unknowns: HTTP/TLS expectations, correct lobby/auth framing, startup failure ownership, game DNS/socket API usage, whether patched zones load, and a verified mechanism for script injection.

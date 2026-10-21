@@ -1,0 +1,165 @@
+2026-10-21T18:20:22.056405Z  INFO t9_proxy: Initializing T9 Proxy DLL...
+2026-10-21T18:20:22.056677Z  INFO t9_proxy: Real XINPUT9_1_0.dll loaded from System32
+2026-10-21T18:20:22.056703Z  INFO t9_proxy::hooks: [hooks] Loaded real WS2_32.dll at 0x7ffe68ab0000
+2026-10-21T18:20:22.056713Z  INFO t9_proxy::hooks: [hooks] Game module base: 0x7ff66fa60000
+2026-10-21T18:20:22.056720Z  INFO t9_proxy::hooks: [hooks] Import directory RVA: 0x1bb1d000, size: 0x2a8
+2026-10-21T18:20:22.056733Z  INFO t9_proxy::hooks: [hooks] Found WS2_32.dll import descriptor
+2026-10-21T18:20:22.056744Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #4
+2026-10-21T18:20:22.056758Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #4 @ IAT 0x7ff68b582938
+2026-10-21T18:20:22.056765Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #9
+2026-10-21T18:20:22.056771Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #16
+2026-10-21T18:20:22.056777Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #19
+2026-10-21T18:20:22.056782Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #21
+2026-10-21T18:20:22.056788Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #23
+2026-10-21T18:20:22.056794Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #115
+2026-10-21T18:20:22.056800Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #116
+2026-10-21T18:20:22.056805Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #111
+2026-10-21T18:20:22.056811Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #3
+2026-10-21T18:20:22.056818Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: getaddrinfo
+2026-10-21T18:20:22.056857Z  INFO t9_proxy::hooks: [hooks] Hooked getaddrinfo @ IAT 0x7ff68b582988: 0x7ffe68acc3a0 -> 0x7ffdd50422d0
+2026-10-21T18:20:22.056866Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #7
+2026-10-21T18:20:22.056872Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #8
+2026-10-21T18:20:22.056878Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #14
+2026-10-21T18:20:22.056883Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #10
+2026-10-21T18:20:22.056889Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #17
+2026-10-21T18:20:22.056895Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #20
+2026-10-21T18:20:22.056901Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #18
+2026-10-21T18:20:22.056906Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #151
+2026-10-21T18:20:22.056912Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #1
+2026-10-21T18:20:22.056918Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #2
+2026-10-21T18:20:22.056924Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #13
+2026-10-21T18:20:22.056929Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #15
+2026-10-21T18:20:22.056935Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #52
+2026-10-21T18:20:22.056943Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #52 @ IAT 0x7ff68b5829f0
+2026-10-21T18:20:22.056949Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #57
+2026-10-21T18:20:22.056955Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_ntop
+2026-10-21T18:20:22.056961Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #5
+2026-10-21T18:20:22.056967Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #6
+2026-10-21T18:20:22.056972Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #12
+2026-10-21T18:20:22.056978Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketW
+2026-10-21T18:20:22.056984Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: freeaddrinfo
+2026-10-21T18:20:22.056992Z  INFO t9_proxy::hooks: [hooks] Hooked freeaddrinfo @ IAT 0x7ff68b582a28: 0x7ffe68acd8d0 -> 0x7ffdd5043050
+2026-10-21T18:20:22.056999Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_pton
+2026-10-21T18:20:22.057005Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAAddressToStringA
+2026-10-21T18:20:22.057011Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAStringToAddressA
+2026-10-21T18:20:22.057019Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #112
+2026-10-21T18:20:22.057025Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketA
+2026-10-21T18:20:22.057031Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAIoctl
+2026-10-21T18:20:22.057036Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACreateEvent
+2026-10-21T18:20:22.057042Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #11
+2026-10-21T18:20:22.057048Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACloseEvent
+2026-10-21T18:20:22.057055Z  INFO t9_proxy::hooks: [hooks] Installed 4 IAT hooks
+2026-10-21T18:20:22.057062Z  INFO t9_proxy: Installed 4 Winsock IAT hooks
+2026-10-21T18:20:22.057090Z  INFO t9_proxy: Proxy DLL ready — all DemonWare traffic routes to 127.0.0.1
+2026-10-21T18:20:27.844631Z  INFO t9_proxy: Initializing T9 Proxy DLL...
+2026-10-21T18:20:27.845107Z  INFO t9_proxy: Real XINPUT9_1_0.dll loaded from System32
+2026-10-21T18:20:27.845304Z  INFO t9_proxy::hooks: [hooks] Loaded real WS2_32.dll at 0x7ffe68ab0000
+2026-10-21T18:20:27.845527Z  INFO t9_proxy::hooks: [hooks] Game module base: 0x7ff66fa60000
+2026-10-21T18:20:27.845698Z  INFO t9_proxy::hooks: [hooks] Import directory RVA: 0x1bb1d000, size: 0x2a8
+2026-10-21T18:20:27.845894Z  INFO t9_proxy::hooks: [hooks] Found WS2_32.dll import descriptor
+2026-10-21T18:20:27.846178Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #4
+2026-10-21T18:20:27.846419Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #4 @ IAT 0x7ff68b582938
+2026-10-21T18:20:27.847121Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #9
+2026-10-21T18:20:27.847344Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #16
+2026-10-21T18:20:27.847563Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #19
+2026-10-21T18:20:27.847785Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #21
+2026-10-21T18:20:27.848132Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #23
+2026-10-21T18:20:27.848333Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #115
+2026-10-21T18:20:27.848540Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #116
+2026-10-21T18:20:27.848740Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #111
+2026-10-21T18:20:27.848978Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #3
+2026-10-21T18:20:27.849210Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: getaddrinfo
+2026-10-21T18:20:27.849375Z  INFO t9_proxy::hooks: [hooks] Hooked getaddrinfo @ IAT 0x7ff68b582988: 0x7ffe68acc3a0 -> 0x7ffdd4c822d0
+2026-10-21T18:20:27.849544Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #7
+2026-10-21T18:20:27.849730Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #8
+2026-10-21T18:20:27.849940Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #14
+2026-10-21T18:20:27.850115Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #10
+2026-10-21T18:20:27.850299Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #17
+2026-10-21T18:20:27.850466Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #20
+2026-10-21T18:20:27.850621Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #18
+2026-10-21T18:20:27.850804Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #151
+2026-10-21T18:20:27.850978Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #1
+2026-10-21T18:20:27.851149Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #2
+2026-10-21T18:20:27.851300Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #13
+2026-10-21T18:20:27.851454Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #15
+2026-10-21T18:20:27.851672Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #52
+2026-10-21T18:20:27.851858Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #52 @ IAT 0x7ff68b5829f0
+2026-10-21T18:20:27.852044Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #57
+2026-10-21T18:20:27.852228Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_ntop
+2026-10-21T18:20:27.852492Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #5
+2026-10-21T18:20:27.852732Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #6
+2026-10-21T18:20:27.852939Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #12
+2026-10-21T18:20:27.853192Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketW
+2026-10-21T18:20:27.853390Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: freeaddrinfo
+2026-10-21T18:20:27.853563Z  INFO t9_proxy::hooks: [hooks] Hooked freeaddrinfo @ IAT 0x7ff68b582a28: 0x7ffe68acd8d0 -> 0x7ffdd4c83050
+2026-10-21T18:20:27.853637Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_pton
+2026-10-21T18:20:27.853726Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAAddressToStringA
+2026-10-21T18:20:27.853919Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAStringToAddressA
+2026-10-21T18:20:27.854010Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #112
+2026-10-21T18:20:27.854129Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketA
+2026-10-21T18:20:27.854296Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAIoctl
+2026-10-21T18:20:27.854397Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACreateEvent
+2026-10-21T18:20:27.854625Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #11
+2026-10-21T18:20:27.854710Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACloseEvent
+2026-10-21T18:20:27.854798Z  INFO t9_proxy::hooks: [hooks] Installed 4 IAT hooks
+2026-10-21T18:20:27.854897Z  INFO t9_proxy: Installed 4 Winsock IAT hooks
+2026-10-21T18:20:27.856584Z  INFO t9_proxy: Proxy DLL ready — all DemonWare traffic routes to 127.0.0.1
+2026-10-21T18:20:35.331235Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.us.demonware.net -> 127.0.0.1:3074
+2026-10-21T18:20:35.395876Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.eu.demonware.net -> 127.0.0.1:3074
+2026-10-21T18:25:46.222604Z  INFO t9_proxy: Initializing T9 Proxy DLL...
+2026-10-21T18:25:46.223101Z  INFO t9_proxy: Real XINPUT9_1_0.dll loaded from System32
+2026-10-21T18:25:46.223694Z  INFO t9_proxy::hooks: [hooks] Loaded real WS2_32.dll at 0x7ffe68ab0000
+2026-10-21T18:25:46.223902Z  INFO t9_proxy::hooks: [hooks] Game module base: 0x7ff66fa60000
+2026-10-21T18:25:46.224086Z  INFO t9_proxy::hooks: [hooks] Import directory RVA: 0x1bb1d000, size: 0x2a8
+2026-10-21T18:25:46.224273Z  INFO t9_proxy::hooks: [hooks] Found WS2_32.dll import descriptor
+2026-10-21T18:25:46.224686Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #4
+2026-10-21T18:25:46.224868Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #4 @ IAT 0x7ff68b582938
+2026-10-21T18:25:46.225133Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #9
+2026-10-21T18:25:46.225328Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #16
+2026-10-21T18:25:46.225531Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #19
+2026-10-21T18:25:46.228092Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #21
+2026-10-21T18:25:46.228226Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #23
+2026-10-21T18:25:46.228423Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #115
+2026-10-21T18:25:46.228621Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #116
+2026-10-21T18:25:46.228806Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #111
+2026-10-21T18:25:46.229017Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #3
+2026-10-21T18:25:46.229204Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: getaddrinfo
+2026-10-21T18:25:46.229425Z  INFO t9_proxy::hooks: [hooks] Hooked getaddrinfo @ IAT 0x7ff68b582988: 0x7ffe68acc3a0 -> 0x7ffdd649bc40
+2026-10-21T18:25:46.229811Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #7
+2026-10-21T18:25:46.229892Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #8
+2026-10-21T18:25:46.229949Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #14
+2026-10-21T18:25:46.230096Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #10
+2026-10-21T18:25:46.230221Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #17
+2026-10-21T18:25:46.230357Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #20
+2026-10-21T18:25:46.230492Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #18
+2026-10-21T18:25:46.230563Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #151
+2026-10-21T18:25:46.230633Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #1
+2026-10-21T18:25:46.230784Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #2
+2026-10-21T18:25:46.230842Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #13
+2026-10-21T18:25:46.230905Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #15
+2026-10-21T18:25:46.230960Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #52
+2026-10-21T18:25:46.231057Z  INFO t9_proxy::hooks: [hooks] Hooked ordinal #52 @ IAT 0x7ff68b5829f0
+2026-10-21T18:25:46.231124Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #57
+2026-10-21T18:25:46.231183Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_ntop
+2026-10-21T18:25:46.231385Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #5
+2026-10-21T18:25:46.231468Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #6
+2026-10-21T18:25:46.231540Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #12
+2026-10-21T18:25:46.231596Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketW
+2026-10-21T18:25:46.231761Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: freeaddrinfo
+2026-10-21T18:25:46.231841Z  INFO t9_proxy::hooks: [hooks] Hooked freeaddrinfo @ IAT 0x7ff68b582a28: 0x7ffe68acd8d0 -> 0x7ffdd649bc30
+2026-10-21T18:25:46.231908Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: inet_pton
+2026-10-21T18:25:46.232088Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAAddressToStringA
+2026-10-21T18:25:46.232163Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAStringToAddressA
+2026-10-21T18:25:46.232229Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #112
+2026-10-21T18:25:46.232539Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSASocketA
+2026-10-21T18:25:46.232928Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSAIoctl
+2026-10-21T18:25:46.233101Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACreateEvent
+2026-10-21T18:25:46.233253Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 ordinal import: #11
+2026-10-21T18:25:46.233383Z DEBUG t9_proxy::hooks: [hooks]   WS2_32 import: WSACloseEvent
+2026-10-21T18:25:46.233454Z  INFO t9_proxy::hooks: [hooks] Installed 4 IAT hooks
+2026-10-21T18:25:46.233528Z  INFO t9_proxy: Installed 4 Winsock IAT hooks
+2026-10-21T18:25:46.234336Z  INFO t9_proxy: Proxy DLL ready — all DemonWare traffic routes to 127.0.0.1
+2026-10-21T18:25:54.358197Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.us.demonware.net -> 127.0.0.1:3074
+2026-10-21T18:25:54.422967Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.eu.demonware.net -> 127.0.0.1:3074
+2026-10-21T18:25:58.476703Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.au.demonware.net -> 127.0.0.1:3074
+2026-10-21T18:25:58.535414Z  INFO t9_proxy::hooks: [hooks] getaddrinfo: ops4-stun.jp.demonware.net -> 127.0.0.1:3074

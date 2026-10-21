@@ -1,0 +1,8 @@
+Standalone temp copy; config bind_addr=0.0.0.0; no external listener created.
+exit=1
+t9-server.exe : Error: This experimental server is limited to localhost (127.0.0.1); refusing bind_addr=0.0.0.0
+At line:6 char:83
++ ... coding ascii; $output=& (Join-Path $dir 't9-server.exe') 2>&1 | Out-S ...
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: This exp...nd_addr=0.0.0.0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError

@@ -1,0 +1,15 @@
+PASS rest_login: HTTP/1.1 200 OK; LSG=127.0.0.1:3200; ticket_bytes=128
+PASS umbrella_http: HTTP/1.1 200 OK; body_bytes=2
+PASS stun_ip: reply_type=31; reply_bytes=9; source=127.0.0.1
+PASS stun_nat: reply_type=21; reply_bytes=15; source=127.0.0.1
+PASS lobby_header: reply_bytes=26; message_type=129
+PASS lobby_auth_synthetic: reply_bytes=14; message_type=131
+FAIL lobby_fragmented_header: TimeoutError: timed out
+FAIL legacy_auth_http: TimeoutError: timed out
+FAIL auth_post_single_write: TimeoutError: timed out
+PASS auth_post_split_write: HTTP/1.1 200 OK; response_code=700
+FAIL tls_on_login_port: reply_prefix=b'HTTP/1.1 200 OK'; plain_HTTP=True
+NOT_RUN real game/proxy: synthetic localhost client cannot establish game compatibility or egress isolation
+SUMMARY failures=4
+
+process_exit=1 (four expected failing probes)
