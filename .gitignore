@@ -1,0 +1,21 @@
+/target/
+
+# Generated from the user's game installation. Never commit game assets.
+/extracted/
+/.bocw_backups/
+/bocw_mods/
+
+# Local runtime/configuration output
+/t9-server.toml
+/t9-proxy.log
+/mod_menu.gsc
+*.log
+
+# Local secrets and editor/OS files
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
