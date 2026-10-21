@@ -122,6 +122,38 @@ Recommended first pass:
 7. Add real-format round-trip tests using minimal synthetic fixtures before trusting recompressed fastfiles.
 8. Validate proxy routing narrowly. The server currently exposes only a subset of the local endpoints referenced by the proxy, and most DemonWare services return prototype responses.
 
+### Discord status and attention updates
+
+Use the following Discord webhook to keep the owner informed while working:
+
+```text
+https://discord.com/api/webhooks/1562539108436283546/o3UXGJdLBVIu96H_eba8SM3Ew2tnbaoQ_fa4_UpGhis_0As1olOM3v32w97GRBm5_JoB/
+```
+
+Send an HTTP `POST` with a JSON body containing a concise `content` field. Disable automatic mentions when supported. Use these message prefixes:
+
+- `[BOCW handoff] STATUS` — meaningful milestone progress.
+- `[BOCW handoff] MANUAL ATTENTION` — a blocker that requires the owner, followed by the exact action needed.
+- `[BOCW handoff] IMPORTANT` — a significant finding, risk, decision, or handoff note the owner should retain.
+- `[BOCW handoff] DONE` — final result, test status, and remaining work.
+
+Notification procedure:
+
+1. Clone the private repository and check out `main`.
+2. Run `cargo build --workspace` and `cargo test --workspace` before making changes.
+3. Send one combined status update after cloning and the baseline build/tests finish. Include the branch, short commit SHA, commands run, and pass/fail result. If authentication, cloning, setup, or testing instead requires human intervention, send one `MANUAL ATTENTION` message with the exact error and requested action.
+4. Send another update only after a major milestone, when manual attention is required, when an important note is discovered, or when the work is complete.
+5. Important notes include safety regressions, evidence that contradicts the existing docs, compatibility changes, unresolved risks, and decisions that materially affect the next session.
+
+Do **not** overwhelm the webhook:
+
+- Combine related updates; do not report every command, file edit, retry, or routine success.
+- Send at most four routine messages per work session: baseline, one or two major milestones, and completion. Genuine blockers or urgent safety findings are exceptions.
+- Allow at least 15 minutes between non-urgent updates.
+- Do not paste verbose logs. Include only the relevant error lines and point to a committed file or GitHub URL for details.
+- Never post credentials, account data, game files, extracted assets, private source dumps, or the webhook URL itself in a message.
+- If delivery fails, retry only once and continue working; record the failure in the final handoff instead of repeatedly calling the webhook.
+
 Useful code entry points:
 
 - CLI dispatch: [`src/main.rs`](src/main.rs)
