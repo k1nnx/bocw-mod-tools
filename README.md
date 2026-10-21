@@ -10,12 +10,12 @@ Status as of **2026-10-21**:
 
 | Area | State |
 | --- | --- |
-| Rust workspace | Builds successfully on Windows; `cargo test --workspace` passes 7 tests |
-| Fastfile tooling | TAFF header parsing, Oodle block decompression/recompression, extraction, search, and in-place patch primitives are implemented |
+| Rust workspace | `cargo test --workspace` passes 41 tests on Linux with no warnings; the Windows-only proxy code type-checks with `--target x86_64-pc-windows-msvc`. Not yet re-run on Windows since the 2026-10-21 changes |
+| Fastfile tooling | TAFF header parsing, Oodle block decompression/recompression, extraction, search, and in-place patch primitives are implemented. Decompress/recompress round-trips are tested on synthetic fixtures through a codec seam; real Oodle output is not covered by tests |
 | Safety tooling | Backups, tracked restores, status, and read-only diagnostics have unit/integration coverage |
-| Mod pipeline | Binary/string patch application exists; script/HUD injection is not connected end to end |
-| `t9-server` | Localhost-only login, lobby, STUN, and umbrella prototype; most DemonWare behavior is stubbed or inferred |
-| `t9-proxy` | Windows IAT-hooking prototype; target DLL and routing behavior still require validation against the current game build |
+| Mod pipeline | `apply` patches zones from their backups, honors patch `condition`s, restores zones that are no longer patched, and is tested end to end on a synthetic uncompressed zone. Scripts and the HUD are built but **not injected** into zone files |
+| `t9-server` | Localhost-only login, lobby, STUN, and umbrella prototype with synthetic protocol tests; most DemonWare behavior is stubbed or inferred, and the login service speaks plain HTTP (the game may expect TLS) |
+| `t9-proxy` | Windows IAT-hooking prototype installed as `XINPUT9_1_0.dll`. Only hosts for services `t9-server` implements are redirected; other DemonWare hosts are blocked. Routing rules are unit-tested; the hooks themselves are not runtime-validated |
 | In-game validation | No successful authentication, campaign load, or complete offline session has been established |
 
 The most important limitation is documented in [`docs/connection-diagnostics.md`](docs/connection-diagnostics.md): compiling and passing tests does not establish that the game works or that traffic cannot reach official services.
@@ -29,8 +29,8 @@ The most important limitation is documented in [`docs/connection-diagnostics.md`
 │   ├── t9-common/          # Shared protocol buffers, IDs, hostnames, and ports
 │   ├── t9-server/          # Experimental localhost DemonWare services
 │   └── t9-proxy/           # Windows XInput proxy and Winsock IAT hooks
-├── tests/                  # CLI safety integration tests
-├── mods/                   # Early sample mod data (currently not CLI-compatible)
+├── tests/                  # CLI safety and apply pipeline integration tests
+├── mods/                   # Sample mod in the current mod.toml / patch set format
 └── docs/                   # Architecture, binary findings, and recovery notes
 ```
 
@@ -55,6 +55,13 @@ cd bocw-mod-tools
 cargo build --workspace
 cargo test --workspace
 cargo build --workspace --release
+```
+
+On Linux or macOS, the Windows-only proxy code can still be type-checked:
+
+```sh
+rustup target add x86_64-pc-windows-msvc
+cargo check --workspace --all-targets --target x86_64-pc-windows-msvc
 ```
 
 Release outputs are written under `target/release/`, including:
@@ -90,6 +97,17 @@ The CLI distinguishes tracked project changes from a genuinely stock installatio
 - `proxy install` and `proxy remove` can write game-local XInput DLLs.
 - `verify` compares files only with this tool's backups. It is **not** equivalent to Steam verification.
 - `clean` restores only tracked fastfiles and deliberately does not delete unknown DLLs.
+
+## Mod format
+
+A mod is a directory with a `mod.toml` (see [`mods/no_weapon_rarities`](mods/no_weapon_rarities)):
+
+- `[mod]` — `id`, `name`, `author`, `version`, `description`, `category`, `target_zones`.
+- `[[options]]` — `id`, `label`, `type` (`toggle`, `slider`, `choice`, `number`), `default`, plus optional `min`/`max`/`step`. Values come from the active preset, falling back to defaults.
+- `[[patches]]` — `file` (a TOML or JSON patch set with `name`, `target_zone`, `[[string_patches]]` and/or `[[binary_patches]]`) and an optional `condition`: the option id that must be on, or `!id` to require it off. Replacements must be the same size or shorter.
+- `[[scripts]]` — `file` and `target_zone`. `apply` substitutes `[[[option_id]]]` markers, links the files under the mod's namespace, adds the offline guard, and writes `bocw_mods/build/<zone>/<mod id>.gsc`. Nothing loads these into the game yet.
+
+`apply` always patches a zone's backup copy, so re-applying is repeatable and turning an option off undoes its patch.
 
 ## Architecture notes
 
@@ -149,11 +167,25 @@ Do **not** overwhelm the webhook:
 - Never post credentials, account data, game files, extracted assets, private source dumps, or the webhook URL itself in a message.
 - If delivery fails, retry only once and continue working; record the failure in the final handoff instead of repeatedly calling the webhook.
 
+### Handoff progress (2026-10-21)
+
+1. Baseline `cargo test --workspace` passed (6 tests on Linux; the 7th was Windows-only). Existing safety behavior is preserved, and all tests now run on every platform.
+2. Emulator/proxy claims remain hypotheses. Startup output no longer claims "all DemonWare traffic → 127.0.0.1" or "anti-cheat ACKs all challenges".
+3. **Done:** the target is `XINPUT9_1_0.dll` (`t9_common::dw_protocol::proxy`), since that name was observed loading and Windows ships no `XInput1_0.dll`. `doctor` still reports a stray `XInput1_0.dll`. The real XInput is loaded from `GetSystemDirectory` instead of a hard-coded `C:\Windows`.
+4. **Done:** synthetic tests for the login REST response and ticket layout, the auth3 JSON response, the lobby handshake (header ack, client auth, encrypted service dispatch, pre-auth rejection), and STUN replies. Lobby crypto is now per connection; it was process-wide, so connections shared keys and the transcript grew without bound.
+5. **Done:** `mods/no_weapon_rarities` uses the current schema, with one patch set per option, and a test keeps it loadable.
+6. **Partly done:** scripts are built and conditions honored, but injecting compiled scripts into zone files is still open. The generated HUD's refresh loop no longer hangs, strings are escaped, `callbacks_shared` is imported, and the offline guard now runs (`autoexec`). The HUD/GSC API calls are still unverified against T9.
+7. **Done:** a `BlockCodec` seam plus synthetic fixtures cover the header round trip, compressed/stored/uncompressed blocks, boundary skips at every alignment, patch → recompress → decompress, and corrupt-chain rejection. Fixed along the way: recompression always used Kraken and Oodle-compressed even uncompressed zones; a block ending 16 bytes before an 8 MB boundary wrote a zero-size skip marker that reads as the end marker (silently truncating the zone), and slightly closer endings underflowed.
+8. **Done:** routing moved to `t9-proxy/src/routing.rs`. DNS hooks return one marker address per service (127.84.9.x), and `connect`/`sendto` rewrite only those. The old rule sending every external 80/443 connection to the login service is gone. Object store, exchange, fileshare, AE and unknown DemonWare hosts are blocked instead of routed to unrelated services. `sendto` and `GetAddrInfoW` are now hooked.
+
+Still open: run the suite and a controlled launch on Windows; check whether the game requires TLS for the login service; cover `WSAConnect`/`ConnectEx`/`GetAddrInfoExW`/IPv6 if logs show the game uses them; script injection; recompression tests against real Oodle output.
+
 Useful code entry points:
 
 - CLI dispatch: [`src/main.rs`](src/main.rs)
 - Fastfile parsing/recompression: [`src/zone.rs`](src/zone.rs), [`src/taff.rs`](src/taff.rs)
 - Backup and mutation safeguards: [`src/backup.rs`](src/backup.rs)
 - Mod schema and HUD generation: [`src/mod_manager.rs`](src/mod_manager.rs)
+- Proxy routing rules: [`crates/t9-proxy/src/routing.rs`](crates/t9-proxy/src/routing.rs)
 - Proxy hooks: [`crates/t9-proxy/src/hooks.rs`](crates/t9-proxy/src/hooks.rs)
 - Local services: [`crates/t9-server/src/main.rs`](crates/t9-server/src/main.rs)

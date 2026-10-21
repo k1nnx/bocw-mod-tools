@@ -112,12 +112,22 @@ pub mod hostnames {
         "level3.ssl.blizzard.com",
     ];
 
+    /// True for `demonware.net`/`schild.net` and their subdomains. DNS names are
+    /// case-insensitive and may carry a trailing dot.
     pub fn is_demonware_host(host: &str) -> bool {
-        host.contains("demonware.net") || host.contains("schild.net")
+        let host = normalize(host);
+        ["demonware.net", "schild.net"]
+            .iter()
+            .any(|domain| host == *domain || host.ends_with(&format!(".{}", domain)))
     }
 
     pub fn is_blocked_host(host: &str) -> bool {
+        let host = normalize(host);
         BLOCKED_HOSTS.iter().any(|h| host == *h)
+    }
+
+    pub fn normalize(host: &str) -> String {
+        host.trim_end_matches('.').to_ascii_lowercase()
     }
 }
 
@@ -127,9 +137,92 @@ pub mod ports {
     pub const LOBBY: u16 = 3200;
     pub const STUN: u16 = 3074;
     pub const UMBRELLA: u16 = 3300;
-    pub const FILESHARE: u16 = 3400;
-    pub const OBJECT_STORE: u16 = 3500;
+}
+
+/// Game-local proxy DLL naming.
+///
+/// The game loads `XINPUT9_1_0.dll` from its own directory: a proxy installed
+/// under this name was observed running in the game process (see
+/// `docs/connection-diagnostics.md`). Windows ships no `XInput1_0.dll`, so the
+/// earlier static-analysis note naming it is treated as a misread; that name is
+/// only kept so diagnostics still report a stray copy from an older install.
+pub mod proxy {
+    pub const DLL_NAME: &str = "XINPUT9_1_0.dll";
+    pub const BACKUP_NAME: &str = "XINPUT9_1_0.dll.bak";
+    pub const LEGACY_DLL_NAMES: &[&str] = &["XInput1_0.dll"];
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Transport {
+    Tcp,
+    Udp,
+}
+
+/// Services that `t9-server` actually listens for. The proxy only routes
+/// traffic to these; anything else DemonWare-related is blocked.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum LocalService {
+    LoginService,
+    Lobby,
+    Stun,
+    Umbrella,
+}
+
+impl LocalService {
+    pub const ALL: [LocalService; 4] = [
+        LocalService::LoginService,
+        LocalService::Lobby,
+        LocalService::Stun,
+        LocalService::Umbrella,
+    ];
+
+    pub fn port(self) -> u16 {
+        match self {
+            Self::LoginService => ports::LOGIN_SERVICE,
+            Self::Lobby => ports::LOBBY,
+            Self::Stun => ports::STUN,
+            Self::Umbrella => ports::UMBRELLA,
+        }
+    }
+
+    pub fn transport(self) -> Transport {
+        match self {
+            Self::Stun => Transport::Udp,
+            _ => Transport::Tcp,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::LoginService => "Auth / Login Service",
+            Self::Lobby => "Lobby Server",
+            Self::Stun => "STUN Server",
+            Self::Umbrella => "Umbrella",
+        }
+    }
 }
 
 /// Static session key used for the lobby handshake (same as shield-development).
 pub const SESSION_KEY: &[u8; 24] = b"\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37\x13\x37";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn demonware_host_matching_is_suffix_based() {
+        assert!(hostnames::is_demonware_host("loginservice.prod.demonware.net"));
+        assert!(hostnames::is_demonware_host("STUN.US.DEMONWARE.NET."));
+        assert!(!hostnames::is_demonware_host("demonware.net.example.com"));
+        assert!(!hostnames::is_demonware_host("notdemonware.net"));
+    }
+
+    #[test]
+    fn local_services_have_distinct_ports() {
+        let mut ports: Vec<u16> = LocalService::ALL.iter().map(|s| s.port()).collect();
+        ports.sort_unstable();
+        ports.dedup();
+        assert_eq!(ports.len(), LocalService::ALL.len());
+        assert_eq!(LocalService::Stun.transport(), Transport::Udp);
+    }
+}

@@ -1,0 +1,9 @@
+# Replaces the rarity map variable name with a dead name of the same length,
+# so the GSC runtime can't find the rarity lookup table.
+name = "No weapon rarity map"
+target_zone = "zm_common"
+
+[[string_patches]]
+description = "Neutralize weapon_rarity_map_list variable name"
+search = "weapon_rarity_map_list"
+replace = "weapon_rarity_map_noop"

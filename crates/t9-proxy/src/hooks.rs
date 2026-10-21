@@ -1,26 +1,24 @@
 //! IAT-based Winsock hooks for redirecting DemonWare traffic.
 //!
 //! On DLL load, we walk the game's PE import table and replace Winsock function
-//! pointers with our own stubs. Our stubs check if the target is a DemonWare
-//! host and redirect to 127.0.0.1 (the local emulator). Non-DW traffic passes
-//! through to the real Winsock functions.
+//! pointers with our own stubs. The DNS stubs resolve DemonWare hosts to
+//! per-service marker addresses (or fail the lookup); the `connect`/`sendto`
+//! stubs rewrite only those markers to the local emulator. Routing rules live
+//! in `routing.rs`; everything else passes through to the real Winsock.
 
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
 use std::ffi::CStr;
 use std::sync::Mutex;
-use t9_common::dw_protocol::{hostnames, ports};
 
-#[cfg(windows)]
+use crate::routing::{self, HostRoute};
+
 use windows_sys::Win32::Foundation::HMODULE;
-#[cfg(windows)]
 use windows_sys::Win32::Networking::WinSock::{
-    ADDRINFOA, AF_INET, SOCKADDR, SOCKADDR_IN, SOCKET, SOCKET_ERROR, WSAHOST_NOT_FOUND,
+    ADDRINFOA, ADDRINFOW, AF_INET, SOCKADDR, SOCKADDR_IN, SOCKET, SOCKET_ERROR, WSAHOST_NOT_FOUND,
 };
-#[cfg(windows)]
 use windows_sys::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress, LoadLibraryA};
-#[cfg(windows)]
 use windows_sys::Win32::System::Memory::{VirtualProtect, PAGE_READWRITE};
 
 // ─── PE structures (manually defined for reliable IAT walking) ──────────────
@@ -123,18 +121,30 @@ unsafe impl Sync for HookEntry {}
 
 static HOOKS: Mutex<Vec<HookEntry>> = Mutex::new(Vec::new());
 
+type ConnectFn = unsafe extern "system" fn(SOCKET, *const SOCKADDR, i32) -> i32;
+type SendToFn = unsafe extern "system" fn(SOCKET, *const u8, i32, i32, *const SOCKADDR, i32) -> i32;
+type GetAddrInfoFn =
+    unsafe extern "system" fn(*const u8, *const u8, *const ADDRINFOA, *mut *mut ADDRINFOA) -> i32;
+type GetAddrInfoWFn =
+    unsafe extern "system" fn(*const u16, *const u16, *const ADDRINFOW, *mut *mut ADDRINFOW) -> i32;
+type FreeAddrInfoFn = unsafe extern "system" fn(*mut ADDRINFOA);
+type GetHostByNameFn = unsafe extern "system" fn(*const u8) -> *mut u8;
+
 // Original Winsock function pointers
-static mut REAL_CONNECT: Option<unsafe extern "system" fn(SOCKET, *const SOCKADDR, i32) -> i32> = None;
-static mut REAL_GETADDRINFO: Option<unsafe extern "system" fn(*const u8, *const u8, *const ADDRINFOA, *mut *mut ADDRINFOA) -> i32> = None;
-static mut REAL_FREEADDRINFO: Option<unsafe extern "system" fn(*mut ADDRINFOA)> = None;
-static mut REAL_GETHOSTBYNAME: Option<unsafe extern "system" fn(*const u8) -> *mut u8> = None;
+static mut REAL_CONNECT: Option<ConnectFn> = None;
+static mut REAL_SENDTO: Option<SendToFn> = None;
+static mut REAL_GETADDRINFO: Option<GetAddrInfoFn> = None;
+static mut REAL_GETADDRINFOW: Option<GetAddrInfoWFn> = None;
+static mut REAL_FREEADDRINFO: Option<FreeAddrInfoFn> = None;
+static mut REAL_GETHOSTBYNAME: Option<GetHostByNameFn> = None;
 
 // Handle to real WS2_32.dll for fallback calls
 static mut WS2_32_HANDLE: HMODULE = 0;
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
-pub fn install_hooks() -> Result<usize, String> {
+/// Install the hooks and return the names of the imports that were patched.
+pub fn install_hooks() -> Result<Vec<&'static str>, String> {
     unsafe { install_hooks_impl() }
 }
 
@@ -144,8 +154,29 @@ pub fn remove_hooks() {
 
 // ─── Implementation ─────────────────────────────────────────────────────────
 
-#[cfg(windows)]
-unsafe fn install_hooks_impl() -> Result<usize, String> {
+fn hook_for_name(name: &str) -> Option<(&'static str, usize)> {
+    Some(match name {
+        "connect" => ("connect", hooked_connect as *const () as usize),
+        "sendto" => ("sendto", hooked_sendto as *const () as usize),
+        "getaddrinfo" => ("getaddrinfo", hooked_getaddrinfo as *const () as usize),
+        "GetAddrInfoW" => ("GetAddrInfoW", hooked_getaddrinfow as *const () as usize),
+        "freeaddrinfo" => ("freeaddrinfo", hooked_freeaddrinfo as *const () as usize),
+        "gethostbyname" => ("gethostbyname", hooked_gethostbyname as *const () as usize),
+        _ => return None,
+    })
+}
+
+/// WS2_32 exports a few classic functions at fixed ordinals.
+fn hook_for_ordinal(ordinal: u16) -> Option<(&'static str, usize)> {
+    match ordinal {
+        4 => hook_for_name("connect"),
+        20 => hook_for_name("sendto"),
+        52 => hook_for_name("gethostbyname"),
+        _ => None,
+    }
+}
+
+unsafe fn install_hooks_impl() -> Result<Vec<&'static str>, String> {
     // Load real WS2_32.dll so we can forward non-DW calls
     let ws2 = LoadLibraryA(b"ws2_32.dll\0".as_ptr());
     if ws2 == 0 {
@@ -155,7 +186,9 @@ unsafe fn install_hooks_impl() -> Result<usize, String> {
 
     // Save real function pointers from the actual WS2_32
     REAL_CONNECT = load_fn(ws2, b"connect\0");
+    REAL_SENDTO = load_fn(ws2, b"sendto\0");
     REAL_GETADDRINFO = load_fn(ws2, b"getaddrinfo\0");
+    REAL_GETADDRINFOW = load_fn(ws2, b"GetAddrInfoW\0");
     REAL_FREEADDRINFO = load_fn(ws2, b"freeaddrinfo\0");
     REAL_GETHOSTBYNAME = load_fn(ws2, b"gethostbyname\0");
 
@@ -194,27 +227,20 @@ unsafe fn install_hooks_impl() -> Result<usize, String> {
 
     // Walk import descriptors
     let mut import_desc = base.add(import_dir.VirtualAddress as usize) as *const IMAGE_IMPORT_DESCRIPTOR;
-    let mut hook_count = 0u32;
+    let mut hooked = Vec::new();
 
     loop {
         let desc = &*import_desc;
         if desc.Name == 0 && desc.FirstThunk == 0 {
             break; // null terminator
         }
+        import_desc = import_desc.add(1);
 
         let dll_name_ptr = base.add(desc.Name as usize) as *const i8;
-        let dll_name = match CStr::from_ptr(dll_name_ptr).to_str() {
-            Ok(s) => s,
-            Err(_) => {
-                import_desc = import_desc.add(1);
-                continue;
-            }
-        };
-
         // We only hook WS2_32.dll imports
-        if !dll_name.eq_ignore_ascii_case("WS2_32.dll") {
-            import_desc = import_desc.add(1);
-            continue;
+        match CStr::from_ptr(dll_name_ptr).to_str() {
+            Ok(name) if name.eq_ignore_ascii_case("WS2_32.dll") => {}
+            _ => continue,
         }
 
         tracing::info!("[hooks] Found WS2_32.dll import descriptor");
@@ -229,145 +255,63 @@ unsafe fn install_hooks_impl() -> Result<usize, String> {
         let mut int_entry = base.add(int_base as usize) as *const u64;
         let mut iat_entry = base.add(desc.FirstThunk as usize) as *mut usize;
 
-        loop {
+        while *int_entry != 0 {
             let thunk = *int_entry;
-            if thunk == 0 {
-                break;
-            }
 
-            // Log and handle ordinal imports
-            if thunk & IMAGE_ORDINAL_FLAG64 != 0 {
+            let hook = if thunk & IMAGE_ORDINAL_FLAG64 != 0 {
                 let ordinal = (thunk & 0xFFFF) as u16;
                 tracing::debug!("[hooks]   WS2_32 ordinal import: #{}", ordinal);
-
-                // connect is ordinal 4 in ws2_32.dll
-                let hook_fn: Option<usize> = match ordinal {
-                    4 => Some(hooked_connect as usize),   // connect
-                    52 => Some(hooked_gethostbyname as usize), // gethostbyname
-                    _ => None,
-                };
-
-                if let Some(new_fn) = hook_fn {
-                    let original = *iat_entry;
-                    let mut old_protect: u32 = 0;
-                    let ok = VirtualProtect(
-                        iat_entry as *mut _,
-                        std::mem::size_of::<usize>(),
-                        PAGE_READWRITE,
-                        &mut old_protect,
-                    );
-                    if ok != 0 {
-                        *iat_entry = new_fn;
-                        VirtualProtect(
-                            iat_entry as *mut _,
-                            std::mem::size_of::<usize>(),
-                            old_protect,
-                            &mut old_protect,
-                        );
-                        if let Ok(mut hooks) = HOOKS.lock() {
-                            hooks.push(HookEntry {
-                                iat_addr: iat_entry,
-                                original_fn: original,
-                            });
-                        }
-                        tracing::info!(
-                            "[hooks] Hooked ordinal #{} @ IAT {:#x}",
-                            ordinal, iat_entry as usize
-                        );
-                        hook_count += 1;
+                hook_for_ordinal(ordinal)
+            } else {
+                let import_by_name = base.add(thunk as usize) as *const IMAGE_IMPORT_BY_NAME;
+                let func_name_ptr = &(*import_by_name).Name as *const u8 as *const i8;
+                match CStr::from_ptr(func_name_ptr).to_str() {
+                    Ok(func_name) => {
+                        tracing::debug!("[hooks]   WS2_32 import: {}", func_name);
+                        hook_for_name(func_name)
                     }
-                }
-
-                int_entry = int_entry.add(1);
-                iat_entry = iat_entry.add(1);
-                continue;
-            }
-
-            let import_by_name = base.add(thunk as usize) as *const IMAGE_IMPORT_BY_NAME;
-            let func_name_ptr = &(*import_by_name).Name as *const u8 as *const i8;
-            let func_name = match CStr::from_ptr(func_name_ptr).to_str() {
-                Ok(s) => s,
-                Err(_) => {
-                    int_entry = int_entry.add(1);
-                    iat_entry = iat_entry.add(1);
-                    continue;
+                    Err(_) => None,
                 }
             };
 
-            tracing::debug!("[hooks]   WS2_32 import: {}", func_name);
-
-            let hook_fn: Option<usize> = match func_name {
-                "connect" => Some(hooked_connect as usize),
-                "getaddrinfo" => Some(hooked_getaddrinfo as usize),
-                "freeaddrinfo" => Some(hooked_freeaddrinfo as usize),
-                "gethostbyname" => Some(hooked_gethostbyname as usize),
-                _ => None,
-            };
-
-            if let Some(new_fn) = hook_fn {
-                let original = *iat_entry;
-
-                // Make the IAT entry writable
-                let mut old_protect: u32 = 0;
-                let ok = VirtualProtect(
-                    iat_entry as *mut _,
-                    std::mem::size_of::<usize>(),
-                    PAGE_READWRITE,
-                    &mut old_protect,
-                );
-                if ok == 0 {
-                    tracing::warn!("[hooks] VirtualProtect failed for {}", func_name);
-                    int_entry = int_entry.add(1);
-                    iat_entry = iat_entry.add(1);
-                    continue;
+            if let Some((name, new_fn)) = hook {
+                if patch_iat_entry(iat_entry, new_fn) {
+                    tracing::info!("[hooks] Hooked {} @ IAT {:#x}", name, iat_entry as usize);
+                    hooked.push(name);
+                } else {
+                    tracing::warn!("[hooks] VirtualProtect failed for {}", name);
                 }
-
-                // Patch the IAT
-                *iat_entry = new_fn;
-
-                // Restore protection
-                VirtualProtect(
-                    iat_entry as *mut _,
-                    std::mem::size_of::<usize>(),
-                    old_protect,
-                    &mut old_protect,
-                );
-
-                // Save for unhooking
-                if let Ok(mut hooks) = HOOKS.lock() {
-                    hooks.push(HookEntry {
-                        iat_addr: iat_entry,
-                        original_fn: original,
-                    });
-                }
-
-                tracing::info!(
-                    "[hooks] Hooked {} @ IAT {:#x}: {:#x} -> {:#x}",
-                    func_name,
-                    iat_entry as usize,
-                    original,
-                    new_fn
-                );
-                hook_count += 1;
             }
 
             int_entry = int_entry.add(1);
             iat_entry = iat_entry.add(1);
         }
-
-        import_desc = import_desc.add(1);
     }
 
-    tracing::info!("[hooks] Installed {} IAT hooks", hook_count);
-    Ok(hook_count as usize)
+    tracing::info!("[hooks] Installed {} IAT hooks: {:?}", hooked.len(), hooked);
+    Ok(hooked)
 }
 
-#[cfg(not(windows))]
-unsafe fn install_hooks_impl() -> Result<usize, String> {
-    Ok(0)
+unsafe fn patch_iat_entry(iat_entry: *mut usize, new_fn: usize) -> bool {
+    let size = std::mem::size_of::<usize>();
+    let mut old_protect: u32 = 0;
+    if VirtualProtect(iat_entry as *const _, size, PAGE_READWRITE, &mut old_protect) == 0 {
+        return false;
+    }
+
+    let original = *iat_entry;
+    *iat_entry = new_fn;
+    VirtualProtect(iat_entry as *const _, size, old_protect, &mut old_protect);
+
+    if let Ok(mut hooks) = HOOKS.lock() {
+        hooks.push(HookEntry {
+            iat_addr: iat_entry,
+            original_fn: original,
+        });
+    }
+    true
 }
 
-#[cfg(windows)]
 unsafe fn remove_hooks_impl() {
     // Wrap in catch_unwind — this runs during DLL_PROCESS_DETACH when TLS
     // may already be destroyed, so any tracing call could panic
@@ -376,7 +320,7 @@ unsafe fn remove_hooks_impl() {
             for entry in hooks.drain(..) {
                 let mut old_protect: u32 = 0;
                 let ok = VirtualProtect(
-                    entry.iat_addr as *mut _,
+                    entry.iat_addr as *const _,
                     std::mem::size_of::<usize>(),
                     PAGE_READWRITE,
                     &mut old_protect,
@@ -384,7 +328,7 @@ unsafe fn remove_hooks_impl() {
                 if ok != 0 {
                     *entry.iat_addr = entry.original_fn;
                     VirtualProtect(
-                        entry.iat_addr as *mut _,
+                        entry.iat_addr as *const _,
                         std::mem::size_of::<usize>(),
                         old_protect,
                         &mut old_protect,
@@ -395,107 +339,114 @@ unsafe fn remove_hooks_impl() {
     }));
 }
 
-#[cfg(not(windows))]
-unsafe fn remove_hooks_impl() {}
-
 // ─── Helper ─────────────────────────────────────────────────────────────────
 
-#[cfg(windows)]
 unsafe fn load_fn<T>(module: HMODULE, name: &[u8]) -> Option<T> {
     let proc = GetProcAddress(module, name.as_ptr());
     proc.map(|p| std::mem::transmute_copy(&p))
 }
 
+/// If `name` is one of our marker addresses, return the emulator address to
+/// use instead. Every other destination is left alone.
+unsafe fn redirected_sockaddr(api: &str, name: *const SOCKADDR, namelen: i32) -> Option<SOCKADDR_IN> {
+    if name.is_null() || namelen < std::mem::size_of::<SOCKADDR_IN>() as i32 {
+        return None;
+    }
+    let addr_in = &*(name as *const SOCKADDR_IN);
+    if addr_in.sin_family != AF_INET {
+        return None;
+    }
+
+    let ip = addr_in.sin_addr.S_un.S_addr.to_ne_bytes();
+    let port = u16::from_be(addr_in.sin_port);
+    let Some((new_ip, new_port)) = routing::rewrite_destination(ip, port) else {
+        tracing::debug!(
+            "[audit] {} passthrough: {}.{}.{}.{}:{}",
+            api, ip[0], ip[1], ip[2], ip[3], port
+        );
+        return None;
+    };
+
+    let mut redirected = *addr_in;
+    redirected.sin_addr.S_un.S_addr = u32::from_ne_bytes(new_ip);
+    redirected.sin_port = new_port.to_be();
+    tracing::info!(
+        "[hooks] {}: {}.{}.{}.{}:{} -> {}.{}.{}.{}:{}",
+        api, ip[0], ip[1], ip[2], ip[3], port,
+        new_ip[0], new_ip[1], new_ip[2], new_ip[3], new_port
+    );
+    Some(redirected)
+}
+
+fn route_lookup(api: &str, hostname: &str) -> Option<HostRoute> {
+    let route = routing::route_host(hostname);
+    match route {
+        Some(HostRoute::Redirect(service)) => {
+            let [a, b, c, d] = routing::marker_ip(service);
+            tracing::info!(
+                "[hooks] {}: {} -> {}.{}.{}.{} ({})",
+                api, hostname, a, b, c, d, service.name()
+            );
+        }
+        Some(HostRoute::Block) => tracing::info!("[hooks] {}: BLOCKED {}", api, hostname),
+        None => tracing::debug!("[audit] {} passthrough: {}", api, hostname),
+    }
+    route
+}
+
 // ─── Hook functions ─────────────────────────────────────────────────────────
 
-/// Hooked `connect` — intercepts connections to DemonWare IPs and redirects to localhost.
-#[cfg(windows)]
+/// Hooked `connect` — rewrites marker destinations to the local emulator.
 unsafe extern "system" fn hooked_connect(
     socket: SOCKET,
     name: *const SOCKADDR,
     namelen: i32,
 ) -> i32 {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        hooked_connect_impl(socket, name, namelen)
+        let Some(real) = REAL_CONNECT else {
+            return SOCKET_ERROR;
+        };
+        match redirected_sockaddr("connect", name, namelen) {
+            Some(redirected) => real(
+                socket,
+                &redirected as *const SOCKADDR_IN as *const SOCKADDR,
+                std::mem::size_of::<SOCKADDR_IN>() as i32,
+            ),
+            None => real(socket, name, namelen),
+        }
     }))
     .unwrap_or(SOCKET_ERROR)
 }
 
-#[cfg(windows)]
-unsafe fn hooked_connect_impl(
+/// Hooked `sendto` — UDP traffic (STUN) to marker destinations.
+unsafe extern "system" fn hooked_sendto(
     socket: SOCKET,
-    name: *const SOCKADDR,
-    namelen: i32,
+    buf: *const u8,
+    len: i32,
+    flags: i32,
+    to: *const SOCKADDR,
+    tolen: i32,
 ) -> i32 {
-    let real = match REAL_CONNECT {
-        Some(f) => f,
-        None => return SOCKET_ERROR,
-    };
-
-    if namelen >= std::mem::size_of::<SOCKADDR_IN>() as i32 {
-        let addr_in = &*(name as *const SOCKADDR_IN);
-        if addr_in.sin_family == AF_INET as u16 {
-            let ip_bytes = addr_in.sin_addr.S_un.S_addr.to_ne_bytes();
-            let port = u16::from_be(addr_in.sin_port);
-
-            let redirect_port = match port {
-                3074 => Some(ports::STUN),
-                3100 => Some(ports::LOGIN_SERVICE),
-                3200 => Some(ports::LOBBY),
-                3300 => Some(ports::UMBRELLA),
-                3400 => Some(ports::FILESHARE),
-                3500 => Some(ports::OBJECT_STORE),
-                80 | 443 => {
-                    if ip_bytes[0] != 127 {
-                        tracing::info!(
-                            "[hooks] connect: HTTP(S) port {} to {}.{}.{}.{} - redirecting to auth",
-                            port, ip_bytes[0], ip_bytes[1], ip_bytes[2], ip_bytes[3]
-                        );
-                        Some(ports::LOGIN_SERVICE)
-                    } else {
-                        None
-                    }
-                }
-                _ => None,
-            };
-
-            if let Some(local_port) = redirect_port {
-                let mut redirected = *addr_in;
-                redirected.sin_addr.S_un.S_addr = u32::from_ne_bytes([127, 0, 0, 1]);
-                redirected.sin_port = local_port.to_be();
-
-                tracing::info!(
-                    "[hooks] connect: {}.{}.{}.{}:{} -> 127.0.0.1:{}",
-                    ip_bytes[0], ip_bytes[1], ip_bytes[2], ip_bytes[3],
-                    port,
-                    local_port
-                );
-
-                return real(
-                    socket,
-                    &redirected as *const SOCKADDR_IN as *const SOCKADDR,
-                    std::mem::size_of::<SOCKADDR_IN>() as i32,
-                );
-            }
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let Some(real) = REAL_SENDTO else {
+            return SOCKET_ERROR;
+        };
+        match redirected_sockaddr("sendto", to, tolen) {
+            Some(redirected) => real(
+                socket,
+                buf,
+                len,
+                flags,
+                &redirected as *const SOCKADDR_IN as *const SOCKADDR,
+                std::mem::size_of::<SOCKADDR_IN>() as i32,
+            ),
+            None => real(socket, buf, len, flags, to, tolen),
         }
-    }
-
-    if namelen >= std::mem::size_of::<SOCKADDR_IN>() as i32 {
-        let addr_in = &*(name as *const SOCKADDR_IN);
-        if addr_in.sin_family == AF_INET as u16 {
-            let ip = addr_in.sin_addr.S_un.S_addr.to_ne_bytes();
-            let port = u16::from_be(addr_in.sin_port);
-            tracing::debug!(
-                "[audit] connect passthrough: {}.{}.{}.{}:{}",
-                ip[0], ip[1], ip[2], ip[3], port
-            );
-        }
-    }
-    real(socket, name, namelen)
+    }))
+    .unwrap_or(SOCKET_ERROR)
 }
 
-/// Hooked `getaddrinfo` — resolves DemonWare hostnames to localhost.
-#[cfg(windows)]
+/// Hooked `getaddrinfo` — resolves DemonWare hostnames to marker addresses.
 unsafe extern "system" fn hooked_getaddrinfo(
     node: *const u8,
     service: *const u8,
@@ -503,52 +454,66 @@ unsafe extern "system" fn hooked_getaddrinfo(
     result: *mut *mut ADDRINFOA,
 ) -> i32 {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        hooked_getaddrinfo_impl(node, service, hints, result)
+        let Some(real) = REAL_GETADDRINFO else {
+            return WSAHOST_NOT_FOUND;
+        };
+        if !node.is_null() {
+            if let Ok(hostname) = CStr::from_ptr(node as *const i8).to_str() {
+                match route_lookup("getaddrinfo", hostname) {
+                    Some(HostRoute::Redirect(svc)) => {
+                        let marker = routing::marker_host_cstr(svc);
+                        return real(marker.as_ptr(), service, hints, result);
+                    }
+                    Some(HostRoute::Block) => return WSAHOST_NOT_FOUND,
+                    None => {}
+                }
+            }
+        }
+        real(node, service, hints, result)
     }))
     .unwrap_or(WSAHOST_NOT_FOUND)
 }
 
-#[cfg(windows)]
-unsafe fn hooked_getaddrinfo_impl(
-    node: *const u8,
-    service: *const u8,
-    hints: *const ADDRINFOA,
-    result: *mut *mut ADDRINFOA,
+/// Hooked `GetAddrInfoW` — wide-string variant of `getaddrinfo`.
+unsafe extern "system" fn hooked_getaddrinfow(
+    node: *const u16,
+    service: *const u16,
+    hints: *const ADDRINFOW,
+    result: *mut *mut ADDRINFOW,
 ) -> i32 {
-    let real = match REAL_GETADDRINFO {
-        Some(f) => f,
-        None => return SOCKET_ERROR,
-    };
-
-    if !node.is_null() {
-        if let Ok(hostname) = CStr::from_ptr(node as *const i8).to_str() {
-            if let Some(resolution) = resolve_dw_host(hostname) {
-                match resolution {
-                    DwResolution::Redirect(port) => {
-                        tracing::info!(
-                            "[hooks] getaddrinfo: {} -> 127.0.0.1:{}",
-                            hostname,
-                            port
-                        );
-                        let localhost = b"127.0.0.1\0";
-                        return real(localhost.as_ptr(), service, hints, result);
-                    }
-                    DwResolution::Block => {
-                        tracing::info!("[hooks] getaddrinfo: BLOCKED {}", hostname);
-                        return WSAHOST_NOT_FOUND;
-                    }
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let Some(real) = REAL_GETADDRINFOW else {
+            return WSAHOST_NOT_FOUND;
+        };
+        if let Some(hostname) = wide_to_string(node) {
+            match route_lookup("GetAddrInfoW", &hostname) {
+                Some(HostRoute::Redirect(svc)) => {
+                    let marker: Vec<u16> = String::from_utf8_lossy(&routing::marker_host_cstr(svc))
+                        .encode_utf16()
+                        .collect();
+                    return real(marker.as_ptr(), service, hints, result);
                 }
-            } else {
-                tracing::debug!("[audit] getaddrinfo passthrough: {}", hostname);
+                Some(HostRoute::Block) => return WSAHOST_NOT_FOUND,
+                None => {}
             }
         }
-    }
+        real(node, service, hints, result)
+    }))
+    .unwrap_or(WSAHOST_NOT_FOUND)
+}
 
-    real(node, service, hints, result)
+unsafe fn wide_to_string(ptr: *const u16) -> Option<String> {
+    if ptr.is_null() {
+        return None;
+    }
+    let mut len = 0;
+    while *ptr.add(len) != 0 {
+        len += 1;
+    }
+    String::from_utf16(std::slice::from_raw_parts(ptr, len)).ok()
 }
 
 /// Hooked `freeaddrinfo` — just forwards to real implementation.
-#[cfg(windows)]
 unsafe extern "system" fn hooked_freeaddrinfo(ai: *mut ADDRINFOA) {
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         if let Some(real) = REAL_FREEADDRINFO {
@@ -557,128 +522,25 @@ unsafe extern "system" fn hooked_freeaddrinfo(ai: *mut ADDRINFOA) {
     }));
 }
 
-/// Hooked `gethostbyname` — legacy DNS resolution, redirects DW hosts.
-#[cfg(windows)]
+/// Hooked `gethostbyname` — legacy DNS resolution, same routing as getaddrinfo.
 unsafe extern "system" fn hooked_gethostbyname(name: *const u8) -> *mut u8 {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        hooked_gethostbyname_impl(name)
-    }))
-    .unwrap_or(std::ptr::null_mut())
-}
-
-#[cfg(windows)]
-unsafe fn hooked_gethostbyname_impl(name: *const u8) -> *mut u8 {
-    let real = match REAL_GETHOSTBYNAME {
-        Some(f) => f,
-        None => return std::ptr::null_mut(),
-    };
-
-    if !name.is_null() {
-        if let Ok(hostname) = CStr::from_ptr(name as *const i8).to_str() {
-            if let Some(resolution) = resolve_dw_host(hostname) {
-                match resolution {
-                    DwResolution::Redirect(_port) => {
-                        tracing::info!(
-                            "[hooks] gethostbyname: {} -> 127.0.0.1",
-                            hostname
-                        );
-                        let localhost = b"127.0.0.1\0";
-                        return real(localhost.as_ptr());
+        let Some(real) = REAL_GETHOSTBYNAME else {
+            return std::ptr::null_mut();
+        };
+        if !name.is_null() {
+            if let Ok(hostname) = CStr::from_ptr(name as *const i8).to_str() {
+                match route_lookup("gethostbyname", hostname) {
+                    Some(HostRoute::Redirect(svc)) => {
+                        let marker = routing::marker_host_cstr(svc);
+                        return real(marker.as_ptr());
                     }
-                    DwResolution::Block => {
-                        tracing::info!("[hooks] gethostbyname: BLOCKED {}", hostname);
-                        return std::ptr::null_mut();
-                    }
+                    Some(HostRoute::Block) => return std::ptr::null_mut(),
+                    None => {}
                 }
             }
         }
-    }
-
-    real(name)
-}
-
-// ─── Host resolution ────────────────────────────────────────────────────────
-
-enum DwResolution {
-    Redirect(u16),
-    Block,
-}
-
-fn resolve_dw_host(hostname: &str) -> Option<DwResolution> {
-    if hostnames::is_blocked_host(hostname) {
-        return Some(DwResolution::Block);
-    }
-
-    if hostname.contains("loginservice") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::LOGIN_SERVICE));
-    }
-    if hostname.contains("auth3") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::LOGIN_SERVICE));
-    }
-    if hostname.contains("stun") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::STUN));
-    }
-    if hostname.contains("umbrella") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::UMBRELLA));
-    }
-    if hostname.contains("objectstore") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::OBJECT_STORE));
-    }
-    if hostname.contains("exchange") && hostname.contains("demonware.net") {
-        return Some(DwResolution::Redirect(ports::LOBBY));
-    }
-    if hostname.contains("ae.demonware.net") {
-        return Some(DwResolution::Redirect(ports::UMBRELLA));
-    }
-    if hostname.contains("fileshare") {
-        return Some(DwResolution::Redirect(ports::FILESHARE));
-    }
-
-    // Catch-all for any demonware.net host
-    if hostnames::is_demonware_host(hostname) {
-        tracing::warn!("[hooks] Unknown DW host: {} — routing to lobby", hostname);
-        return Some(DwResolution::Redirect(ports::LOBBY));
-    }
-
-    None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_dw_host_resolution() {
-        // Login service
-        assert!(matches!(
-            resolve_dw_host("loginservice.prod.demonware.net"),
-            Some(DwResolution::Redirect(3100))
-        ));
-        assert!(matches!(
-            resolve_dw_host("navyblue-pc-loginservice.prod.demonware.net"),
-            Some(DwResolution::Redirect(3100))
-        ));
-
-        // STUN
-        assert!(matches!(
-            resolve_dw_host("stun.us.demonware.net"),
-            Some(DwResolution::Redirect(3074))
-        ));
-
-        // Umbrella
-        assert!(matches!(
-            resolve_dw_host("prod.umbrella.demonware.net"),
-            Some(DwResolution::Redirect(3300))
-        ));
-
-        // Blocked hosts
-        assert!(matches!(
-            resolve_dw_host("us.cdn.blizzard.com"),
-            Some(DwResolution::Block)
-        ));
-
-        // Non-DW hosts pass through (None)
-        assert!(resolve_dw_host("store.steampowered.com").is_none());
-        assert!(resolve_dw_host("google.com").is_none());
-    }
+        real(name)
+    }))
+    .unwrap_or(std::ptr::null_mut())
 }

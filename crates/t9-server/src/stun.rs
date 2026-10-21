@@ -73,3 +73,24 @@ fn build_nat_discovery_response(peer_ip: std::net::IpAddr) -> Vec<u8> {
     buf.write_uint16(ports::STUN); // server port
     buf.into_buffer()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::net::{IpAddr, Ipv4Addr};
+
+    #[test]
+    fn discovery_responses_echo_the_peer_address() {
+        let peer = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+
+        let ip = build_ip_discovery_response(peer);
+        assert_eq!(&ip[..3], &[31, 2, 0]);
+        assert_eq!(&ip[3..7], &[127, 0, 0, 1]);
+        assert_eq!(u16::from_le_bytes([ip[7], ip[8]]), ports::STUN);
+
+        let nat = build_nat_discovery_response(peer);
+        assert_eq!(&nat[..3], &[21, 2, 0]);
+        assert_eq!(&nat[3..7], &[127, 0, 0, 1]);
+        assert_eq!(nat.len(), 15);
+    }
+}

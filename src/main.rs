@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 use bocw_mod_tools::*;
@@ -141,7 +141,7 @@ enum Commands {
         action: ServerAction,
     },
 
-    /// Proxy DLL management (install/remove XInput1_0.dll redirect)
+    /// Proxy DLL management (install/remove the XINPUT9_1_0.dll redirect)
     Proxy {
         #[command(subcommand)]
         action: ProxyAction,
@@ -158,7 +158,7 @@ enum ServerAction {
 
 #[derive(Subcommand)]
 enum ProxyAction {
-    /// Install the proxy DLL (XInput1_0.dll) to the game directory
+    /// Install the proxy DLL (XINPUT9_1_0.dll) to the game directory
     Install,
     /// Remove the proxy DLL and restore the original
     Remove,
@@ -215,7 +215,7 @@ fn run() -> Result<()> {
         Commands::Install { path } => cmd_install(&path),
         Commands::Uninstall { mod_id } => cmd_uninstall(&mod_id),
         Commands::List => cmd_list(),
-        Commands::Apply { profile } => cmd_apply(&game, &zone_path, &oodle, &profile, cli.force_offline),
+        Commands::Apply { profile } => cmd_apply(&game, &oodle, &profile, cli.force_offline),
         Commands::Clean => cmd_clean(&game),
         Commands::Status => cmd_status(&game),
         Commands::Doctor => cmd_doctor(&game),
@@ -533,7 +533,7 @@ fn cmd_restore(game: &PathBuf, zones: &[String]) -> Result<()> {
     } else {
         let mut failed = Vec::new();
         for z in zones {
-            let rel = format!("zone\\{}", if z.ends_with(".ff") { z.clone() } else { format!("{}.ff", z) });
+            let rel = zone_rel_path(z);
             match backup::restore_file(game, &rel) {
                 Ok(()) => println!("  {} {}", "✓".green(), z),
                 Err(e) => {
@@ -633,10 +633,15 @@ description = "How strong the mod effect is"
 group = "Gameplay"
 
 # Patches applied to zone file data (binary or string replacements).
+# Each file is a patch set (TOML or JSON) with name, target_zone and
+# [[string_patches]] / [[binary_patches]]. `condition` names an option that
+# must be on for the patch to apply ("!id" inverts it).
 # [[patches]]
-# file = "my_patch.json"
+# file = "patches/my_patch.toml"
+# condition = "enabled"
 
-# GSC scripts injected into zone files.
+# GSC scripts built by 'apply' into bocw_mods/build/<zone>/<mod id>.gsc.
+# They are not injected into zone files yet.
 # [[scripts]]
 # file = "scripts/my_mod.gsc"
 # target_zone = "{zone}"
@@ -736,7 +741,6 @@ fn cmd_list() -> Result<()> {
 
 fn cmd_apply(
     game: &PathBuf,
-    zone_path: &PathBuf,
     oodle: &PathBuf,
     profile_name: &str,
     force_offline: bool,
@@ -750,17 +754,23 @@ fn cmd_apply(
     }
 
     let _profile = mod_manager::load_profile(profile_name)?;
+    let previous_state = backup::load_state(game)?;
 
-    let mut active: Vec<(mod_manager::ModManifest, HashMap<String, mod_manager::OptionValue>)> =
+    let mut active: Vec<(PathBuf, mod_manager::ModManifest, HashMap<String, mod_manager::OptionValue>)> =
         Vec::new();
 
-    for (_path, manifest) in &mods {
+    for (path, manifest) in &mods {
         let preset_store = mod_manager::PresetStore::load(&manifest.info.id)?;
         let values = preset_store.get_active_values(manifest);
-        active.push((manifest.clone(), values));
+        active.push((path.clone(), manifest.clone(), values));
     }
 
-    let conflicts = mod_manager::detect_conflicts(&active);
+    let manifests_with_values: Vec<_> = active
+        .iter()
+        .map(|(_, manifest, values)| (manifest.clone(), values.clone()))
+        .collect();
+
+    let conflicts = mod_manager::detect_conflicts(&manifests_with_values);
     if !conflicts.is_empty() {
         println!("{}", "Mod Conflicts Detected:".yellow().bold());
         for c in &conflicts {
@@ -775,16 +785,43 @@ fn cmd_apply(
         println!();
     }
 
-    let hud_gsc = mod_manager::generate_mod_menu_gsc(&active);
+    let hud_gsc = mod_manager::generate_mod_menu_gsc(&manifests_with_values);
     let hud_path = mod_manager::mods_dir().join("_generated_mod_menu.gsc");
     std::fs::create_dir_all(hud_path.parent().unwrap())?;
     std::fs::write(&hud_path, &hud_gsc)?;
     println!("  {} Generated in-game mod HUD", "✓".green());
 
-    // Group patches by target zone so we decompress each zone once
-    let mut zone_patches: HashMap<String, Vec<(String, patch::PatchSet)>> = HashMap::new();
+    // Substitute → Link → Guard each mod's scripts. Nothing loads these into
+    // the game yet: zone files hold compiled scripts and no injection exists.
+    let build_dir = mod_manager::mods_dir().join("build");
+    let mut built_scripts = Vec::new();
+    for (path, manifest, values) in &active {
+        for script in mod_manager::build_mod_scripts(path, manifest, values)? {
+            let out = build_dir
+                .join(&script.target_zone)
+                .join(format!("{}.gsc", script.mod_id));
+            std::fs::create_dir_all(out.parent().unwrap())?;
+            std::fs::write(&out, &script.source)?;
+            built_scripts.push(out);
+        }
+    }
+    if !built_scripts.is_empty() {
+        println!(
+            "  {} Built {} script file(s) under {}",
+            "✓".green(),
+            built_scripts.len(),
+            build_dir.display()
+        );
+        println!(
+            "  {} Script injection into zone files is not implemented; the game does not load these scripts or the HUD.",
+            "⚠".yellow()
+        );
+    }
 
-    for (manifest, _values) in &active {
+    // Group patches by target zone so we decompress each zone once
+    let mut zone_patches: BTreeMap<String, Vec<(String, patch::PatchSet)>> = BTreeMap::new();
+
+    for (path, manifest, values) in &active {
         println!(
             "\n  Collecting patches: {} v{}",
             manifest.info.name.bold(),
@@ -792,10 +829,12 @@ fn cmd_apply(
         );
 
         for patch_ref in &manifest.patches {
-            let patch_path = mod_manager::installed_mods_dir()
-                .join(&manifest.info.id)
-                .join(&patch_ref.file);
+            if !patch_ref.is_enabled(values)? {
+                println!("    - {} (disabled by option)", patch_ref.file);
+                continue;
+            }
 
+            let patch_path = mod_manager::mod_file_path(path, &patch_ref.file)?;
             if !patch_path.exists() {
                 eprintln!("    {} Patch file not found: {}", "✗".red(), patch_ref.file);
                 continue;
@@ -810,18 +849,20 @@ fn cmd_apply(
         }
     }
 
-    // Apply patches per zone: decompress -> patch -> recompress
+    // Apply patches per zone: original (backup) -> decompress -> patch -> recompress
     let mut modified_files = Vec::new();
 
     for (zone_name, patches) in &zone_patches {
-        let zone_file = format!("zone\\{}.ff", zone_name);
-        let ff_path = zone_path.join(format!("{}.ff", zone_name));
+        let zone_file = zone_rel_path(zone_name);
+        let ff_path = game.join(&zone_file);
 
-        // Never modify a zone when its backup could not be created.
+        // Never modify a zone when its backup could not be created. Patching the
+        // backup copy keeps re-applies idempotent and lets disabled options revert.
         backup::backup_file(game, &zone_file)?;
+        let original_path = backup::backup_path(game, &zone_file)?;
 
         println!("\n  {} Decompressing {}...", "→".cyan(), zone_name);
-        let zf = zone::ZoneFile::open(&ff_path)?;
+        let zf = zone::ZoneFile::open(&original_path)?;
         let decompressed = zf.decompress(oodle)?;
         let mut data = decompressed.data;
         println!("    Decompressed: {} bytes", data.len());
@@ -853,12 +894,28 @@ fn cmd_apply(
             std::fs::write(&ff_path, &recompressed)?;
             modified_files.push(zone_file);
             println!("    {} Written to {}", "✓".green(), ff_path.display());
+        } else {
+            println!("    No patch matched; {} stays original", zone_name);
+        }
+    }
+
+    // Zones patched by an earlier apply but not by this one go back to original.
+    for file in &previous_state.modified_files {
+        if modified_files.contains(file) {
+            continue;
+        }
+        match backup::restore_file(game, file) {
+            Ok(()) => println!("  {} Restored {} (no longer patched)", "✓".green(), file),
+            Err(e) => {
+                eprintln!("  {} Could not restore {}: {}", "✗".red(), file, e);
+                modified_files.push(file.clone());
+            }
         }
     }
 
     let state = backup::ModState {
-        mods_active: true,
-        active_mods: active.iter().map(|(m, _)| m.info.id.clone()).collect(),
+        mods_active: !modified_files.is_empty(),
+        active_mods: active.iter().map(|(_, m, _)| m.info.id.clone()).collect(),
         modified_files,
         last_applied: Some(chrono::Utc::now().to_rfc3339()),
         offline_verified: !force_offline,
@@ -866,9 +923,10 @@ fn cmd_apply(
     backup::save_state(game, &state)?;
 
     println!(
-        "\n{} {} mod(s) applied.",
+        "\n{} {} mod(s) applied, {} zone file(s) modified.",
         "Done!".green().bold(),
         active.len(),
+        state.modified_files.len(),
     );
     println!(
         "{}",
@@ -876,6 +934,16 @@ fn cmd_apply(
     );
 
     Ok(())
+}
+
+/// Game-relative path of a zone file, as recorded in backups and mod state.
+fn zone_rel_path(zone: &str) -> String {
+    let file = if zone.ends_with(".ff") {
+        zone.to_string()
+    } else {
+        format!("{}.ff", zone)
+    };
+    std::path::Path::new("zone").join(file).to_string_lossy().into_owned()
 }
 
 fn cmd_clean(game: &PathBuf) -> Result<()> {
@@ -1164,9 +1232,10 @@ fn start_server(path: &PathBuf) -> Result<()> {
 }
 
 fn cmd_proxy(game: &PathBuf, action: ProxyAction) -> Result<()> {
-    let proxy_dll_name = "XINPUT9_1_0.dll";
+    let proxy_dll_name = t9_common::dw_protocol::proxy::DLL_NAME;
+    let backup_dll_name = t9_common::dw_protocol::proxy::BACKUP_NAME;
     let game_dll = game.join(proxy_dll_name);
-    let backup_dll = game.join("XINPUT9_1_0.dll.bak");
+    let backup_dll = game.join(backup_dll_name);
 
     // Where cargo builds the cdylib
     let built_dll = {
@@ -1222,7 +1291,7 @@ fn cmd_proxy(game: &PathBuf, action: ProxyAction) -> Result<()> {
                     "  {} Backed up original {} -> {}",
                     "✓".green(),
                     proxy_dll_name,
-                    "XINPUT9_1_0.dll.bak"
+                    backup_dll_name
                 );
             }
 

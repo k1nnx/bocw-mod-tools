@@ -1,0 +1,8 @@
+# Same as rarity_map.toml, for Pack-a-Punch'd weapons.
+name = "No upgraded weapon rarity map"
+target_zone = "zm_common"
+
+[[string_patches]]
+description = "Neutralize weapon_upgraded_rarity_map_list variable name"
+search = "weapon_upgraded_rarity_map_list"
+replace = "weapon_upgraded_rarity_map_noop"
