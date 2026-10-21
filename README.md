@@ -2,9 +2,6 @@
 
 Experimental Rust tools for researching and modifying **Call of Duty: Black Ops Cold War (T9)** fastfiles, plus an unfinished local DemonWare emulator and Windows XInput proxy prototype.
 
-> [!CAUTION]
-> This repository is a development prototype, not a ready-to-use mod or a verified offline server. Use it only with a lawfully owned copy of the game and only in an isolated/offline test setup. The proxy does **not** prove that every game connection is blocked or redirected. Remove modifications and use Steam's **Verify integrity of game files** before using official services.
-
 No game binaries, fastfiles, Oodle DLLs, extracted assets, credentials, or backup data belong in this repository.
 
 ## Current status
@@ -94,8 +91,6 @@ The CLI distinguishes tracked project changes from a genuinely stock installatio
 - `verify` compares files only with this tool's backups. It is **not** equivalent to Steam verification.
 - `clean` restores only tracked fastfiles and deliberately does not delete unknown DLLs.
 
-Always close the game before modifying files. Do not bypass the offline check unless you understand the consequences. Before official play, remove known modifications, inspect extra DLLs, and verify the installation through Steam.
-
 ## Architecture notes
 
 The repository contains two related but independently useful efforts:
@@ -162,9 +157,3 @@ Useful code entry points:
 - Mod schema and HUD generation: [`src/mod_manager.rs`](src/mod_manager.rs)
 - Proxy hooks: [`crates/t9-proxy/src/hooks.rs`](crates/t9-proxy/src/hooks.rs)
 - Local services: [`crates/t9-server/src/main.rs`](crates/t9-server/src/main.rs)
-
-## Legal and provenance
-
-This project is unaffiliated with Activision, Treyarch, Demonware, Valve, or Microsoft. Call of Duty and related marks belong to their respective owners. No license has been selected for this private repository; do not redistribute it or third-party assets without the owner's permission.
-
-The publication audit and handoff documentation were prepared with OpenCode using GPT-5.6-Sol. Existing source authorship is not asserted by that disclosure.
