@@ -2,10 +2,10 @@ use anyhow::{bail, Context, Result};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
+use t9_common::dw_protocol::proxy;
 
 const BACKUP_DIR_NAME: &str = ".bocw_backups";
 const STATE_FILE: &str = "mod_state.json";
-const GAME_LOCAL_XINPUT_DLLS: &[&str] = &["XINPUT9_1_0.dll", "XInput1_0.dll"];
 
 #[derive(Debug)]
 pub struct LocalDll {
@@ -94,6 +94,11 @@ fn checked_relative_path(relative_path: &str) -> Result<&Path> {
         bail!("Expected a game-relative file path: {}", relative_path);
     }
     Ok(path)
+}
+
+/// Where the backup of a game-relative file lives (it may not exist yet).
+pub fn backup_path(game_dir: &Path, relative_path: &str) -> Result<PathBuf> {
+    Ok(backup_dir(game_dir).join(checked_relative_path(relative_path)?))
 }
 
 pub fn backup_file(game_dir: &Path, relative_path: &str) -> Result<FileRecord> {
@@ -206,8 +211,8 @@ pub fn verify_integrity(game_dir: &Path) -> Result<Vec<(String, bool)>> {
 /// does not prove that a game install matches Steam's original files.
 pub fn inspect_install(game_dir: &Path) -> Result<InstallInspection> {
     let state = load_state(game_dir)?;
-    let local_dlls = GAME_LOCAL_XINPUT_DLLS
-        .iter()
+    let local_dlls = std::iter::once(&proxy::DLL_NAME)
+        .chain(proxy::LEGACY_DLL_NAMES)
         .filter_map(|&name| {
             let exists = game_dir.join(name).exists();
             let has_backup = game_dir.join(format!("{}.bak", name)).exists();

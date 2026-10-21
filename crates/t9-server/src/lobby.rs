@@ -1,5 +1,5 @@
 use crate::config::ServerConfig;
-use crate::crypto;
+use crate::crypto::LobbyCrypto;
 use crate::services::ServiceRegistry;
 use anyhow::Result;
 use t9_common::dw_protocol::ports;
@@ -11,7 +11,18 @@ use tracing::{debug, info, warn};
 /// Lobby server state per connection.
 struct LobbyConnection {
     authenticated: bool,
+    crypto: LobbyCrypto,
     service_registry: ServiceRegistry,
+}
+
+impl LobbyConnection {
+    fn new() -> Self {
+        Self {
+            authenticated: false,
+            crypto: LobbyCrypto::new(),
+            service_registry: ServiceRegistry::new(),
+        }
+    }
 }
 
 pub async fn run_lobby_server(config: ServerConfig) -> Result<()> {
@@ -24,10 +35,7 @@ pub async fn run_lobby_server(config: ServerConfig) -> Result<()> {
         debug!("[lobby] Connection from {}", peer);
 
         tokio::spawn(async move {
-            let mut conn = LobbyConnection {
-                authenticated: false,
-                service_registry: ServiceRegistry::new(),
-            };
+            let mut conn = LobbyConnection::new();
 
             let mut buf = vec![0u8; 65536];
             loop {
@@ -82,7 +90,7 @@ fn handle_lobby_packet(
 
             let _c8 = buffer.read_int32()?;
             let remaining = buffer.get_remaining().to_vec();
-            crypto::queue_packet_to_hash(&remaining);
+            conn.crypto.queue_packet_to_hash(&remaining);
 
             // Send server_header_ack
             // msgType=0x81, serverSelectedProto=0xD2, cypher210ConnID + serverNonce
@@ -93,7 +101,7 @@ fn handle_lobby_packet(
                 0x13, 0x37, 0x13, 0x37, 0x13, 0x37, 0x13, 0x37, // connID
                 0x13, 0x37, 0x13, 0x37, 0x13, 0x37, 0x13, 0x37, // nonce
             ];
-            crypto::queue_packet_to_hash(&server_ack);
+            conn.crypto.queue_packet_to_hash(&server_ack);
 
             debug!("[lobby] Sending server_header_ack");
             responses.push(server_ack);
@@ -115,13 +123,13 @@ fn handle_lobby_packet(
                 debug!("[lobby] Received client_auth (0x82)");
 
                 let auth_packet = packet[..packet.len().saturating_sub(8)].to_vec();
-                crypto::queue_packet_to_hash(&auth_packet);
-                crypto::derive_keys();
+                conn.crypto.queue_packet_to_hash(&auth_packet);
+                conn.crypto.derive_keys();
 
                 conn.authenticated = true;
 
                 // Send server_auth_done (type 0x83)
-                let response_id = crypto::get_response_id();
+                let response_id = conn.crypto.response_id();
                 let mut reply = vec![0x0A, 0x00, 0x00, 0x00, 0xAB, 0x83];
                 reply.extend_from_slice(&response_id);
 
@@ -149,7 +157,7 @@ fn handle_lobby_packet(
                 let _hash = &remaining[remaining.len() - 8..];
 
                 // Decrypt the service call
-                match crypto::decrypt_lobby_packet(encrypted, &seed) {
+                match conn.crypto.decrypt_lobby_packet(encrypted, &seed) {
                     Ok(decrypted) => {
                         let mut serv = ByteBuffer::from_bytes(decrypted);
                         serv.set_use_data_types(false);
@@ -199,4 +207,108 @@ fn build_empty_reply(task_id: u8) -> Vec<u8> {
     reply.write_raw(&inner_data);
 
     reply.into_buffer()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::services::build_success_reply;
+
+    fn client_header_ack() -> Vec<u8> {
+        let mut packet = vec![0xC8, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00];
+        packet.extend_from_slice(&[0x42; 16]); // client nonce
+        packet
+    }
+
+    fn client_auth() -> Vec<u8> {
+        let mut packet = vec![0x2A, 0x00, 0x00, 0x00, 0xAB, 0x82];
+        packet.extend_from_slice(&[0x55; 32]); // auth body
+        packet.extend_from_slice(&[0x99; 8]); // trailing hash
+        packet
+    }
+
+    fn service_call(conn: &LobbyConnection, service_id: u8, task_id: u8) -> Vec<u8> {
+        let mut plain = ByteBuffer::new();
+        plain.set_use_data_types(false);
+        plain.write_uint32(3);
+        plain.write_ubyte(0x86);
+        plain.write_ubyte(service_id);
+        plain.write_ubyte(task_id);
+        let seed = [0x24u8; 16];
+        let encrypted = conn
+            .crypto
+            .encrypt_lobby_packet(&plain.into_buffer(), &seed)
+            .unwrap();
+
+        let mut body = vec![0xAB, 0x85];
+        body.extend_from_slice(&1u32.to_le_bytes()); // message count
+        body.extend_from_slice(&seed);
+        body.extend_from_slice(&encrypted);
+        body.extend_from_slice(&[0u8; 8]); // hash
+        let mut packet = (body.len() as i32).to_le_bytes().to_vec();
+        packet.extend_from_slice(&body);
+        packet
+    }
+
+    fn authenticated_connection() -> LobbyConnection {
+        let mut conn = LobbyConnection::new();
+        handle_lobby_packet(&mut conn, &client_header_ack()).unwrap();
+        handle_lobby_packet(&mut conn, &client_auth()).unwrap();
+        conn
+    }
+
+    #[test]
+    fn header_ack_gets_server_header_ack() {
+        let mut conn = LobbyConnection::new();
+        let responses = handle_lobby_packet(&mut conn, &client_header_ack()).unwrap();
+        assert_eq!(responses.len(), 1);
+        let ack = &responses[0];
+        assert_eq!(i32::from_le_bytes(ack[..4].try_into().unwrap()) as usize, ack.len() - 4);
+        assert_eq!(&ack[4..6], &[0xAB, 0x81]);
+        assert_eq!(u32::from_le_bytes(ack[6..10].try_into().unwrap()), 210);
+        assert!(!conn.authenticated);
+    }
+
+    #[test]
+    fn client_auth_completes_handshake() {
+        let mut conn = LobbyConnection::new();
+        handle_lobby_packet(&mut conn, &client_header_ack()).unwrap();
+        let responses = handle_lobby_packet(&mut conn, &client_auth()).unwrap();
+        assert!(conn.authenticated);
+        let mut expected = vec![0x0A, 0x00, 0x00, 0x00, 0xAB, 0x83];
+        expected.extend_from_slice(&t9_common::SESSION_KEY[16..24]);
+        assert_eq!(responses, vec![expected]);
+    }
+
+    #[test]
+    fn service_call_before_auth_is_ignored() {
+        let authed = authenticated_connection();
+        let packet = service_call(&authed, 38, 2);
+        let mut fresh = LobbyConnection::new();
+        assert!(handle_lobby_packet(&mut fresh, &packet).unwrap().is_empty());
+    }
+
+    #[test]
+    fn encrypted_service_call_is_dispatched() {
+        let mut conn = authenticated_connection();
+        for (service_id, task_id) in [(4u8, 1u8), (38, 2), (250, 7)] {
+            let packet = service_call(&conn, service_id, task_id);
+            let responses = handle_lobby_packet(&mut conn, &packet).unwrap();
+            assert_eq!(responses, vec![build_success_reply(task_id)], "service {service_id}");
+        }
+    }
+
+    #[test]
+    fn connections_do_not_share_crypto_state() {
+        let _authed = authenticated_connection();
+        let fresh = LobbyConnection::new();
+        assert!(fresh.crypto.decrypt_lobby_packet(&[0; 16], &[0; 16]).is_err());
+    }
+
+    #[test]
+    fn zero_size_packet_gets_zero_reply() {
+        let mut conn = LobbyConnection::new();
+        let responses = handle_lobby_packet(&mut conn, &[0, 0, 0, 0]).unwrap();
+        assert_eq!(responses, vec![vec![0, 0, 0, 0]]);
+    }
 }

@@ -1,15 +1,16 @@
-//! T9 Proxy DLL — masquerades as XInput1_0.dll
+//! T9 Proxy DLL — masquerades as XINPUT9_1_0.dll
 //!
-//! When placed in the BOCW game directory as `XInput1_0.dll`, the game loads this
+//! When placed in the BOCW game directory as `XINPUT9_1_0.dll`, the game loads this
 //! DLL before the system version. On attach we:
 //!   1. Allocate a dev console window for live logging
-//!   2. Load the real XInput from System32 and forward exports
+//!   2. Load the real XInput from the system directory and forward exports
 //!   3. Hook the game's Winsock imports (IAT patching)
-//!   4. Redirect DemonWare traffic to our local emulator
-//!   5. Block Activision/Blizzard CDN hosts
+//!   4. Redirect DemonWare hosts that `t9-server` implements to the local emulator
+//!   5. Block other DemonWare hosts and the Activision/Blizzard CDN hosts
 
 #[cfg(windows)]
 mod hooks;
+pub mod routing;
 
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::{BOOL, TRUE};
@@ -38,24 +39,25 @@ pub unsafe extern "system" fn DllMain(
 
             tracing::info!("Initializing T9 Proxy DLL...");
 
-            // Load real XInput from System32
-            if let Some(handle) = load_real_xinput() {
-                REAL_XINPUT = Some(handle);
-                tracing::info!("Real XINPUT9_1_0.dll loaded from System32");
-            } else {
-                tracing::warn!("Could not load real XInput — controller input may not work");
+            // Load real XInput from the system directory
+            match load_real_xinput() {
+                Some((handle, name)) => {
+                    REAL_XINPUT = Some(handle);
+                    tracing::info!("Real {} loaded from the system directory", name);
+                }
+                None => tracing::warn!("Could not load real XInput — controller input may not work"),
             }
 
             // Install Winsock IAT hooks
             match hooks::install_hooks() {
-                Ok(count) => {
-                    tracing::info!("Installed {} Winsock IAT hooks", count);
-                    print_safety_status(count);
+                Ok(hooked) => {
+                    tracing::info!("Installed {} Winsock IAT hooks", hooked.len());
+                    print_safety_status(&hooked);
                 }
                 Err(e) => tracing::error!("Failed to install hooks: {}", e),
             }
 
-            tracing::info!("Proxy DLL ready — all DemonWare traffic routes to 127.0.0.1");
+            tracing::info!("Proxy DLL ready — see [hooks]/[audit] lines for every routing decision");
 
             TRUE
         }
@@ -132,6 +134,7 @@ fn init_logging() {
         .init();
 }
 
+#[cfg(windows)]
 fn print_banner() {
     // ANSI color codes for a nice banner
     const CYAN: &str = "\x1b[36m";
@@ -157,10 +160,10 @@ fn print_banner() {
 ║                                                              ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
-║   {YELLOW}Mode:{RESET}{CYAN}       OFFLINE ONLY — No Activision connection       ║
+║   {YELLOW}Mode:{RESET}{CYAN}       EXPERIMENTAL — routing not game-verified       ║
 ║   {YELLOW}Proxy:{RESET}{CYAN}      XINPUT9_1_0.dll (Winsock IAT hooks)            ║
-║   {YELLOW}Redirect:{RESET}{CYAN}   *.demonware.net → 127.0.0.1                   ║
-║   {YELLOW}Blocked:{RESET}{CYAN}    Blizzard CDN, Battle.net                       ║
+║   {YELLOW}Redirect:{RESET}{CYAN}   login/lobby/STUN/umbrella → 127.0.0.1         ║
+║   {YELLOW}Blocked:{RESET}{CYAN}    other DemonWare hosts, Blizzard CDN           ║
 ║                                                              ║
 ║   {RED}{BOLD}⚠  NEVER go online with modified files!{RESET}{CYAN}                    ║
 ║   {DIM}Run 'bocw-mod-tools clean' to restore originals first{RESET}{CYAN}    ║
@@ -173,61 +176,62 @@ fn print_banner() {
     print!("{}", banner);
 }
 
-fn print_safety_status(hook_count: usize) {
+#[cfg(windows)]
+fn print_safety_status(hooked: &[&str]) {
     const GREEN: &str = "\x1b[32m";
     const YELLOW: &str = "\x1b[33m";
     const RED: &str = "\x1b[31m";
     const BOLD: &str = "\x1b[1m";
     const RESET: &str = "\x1b[0m";
 
-    println!(
-        "\n{GREEN}{BOLD}  ── Safety Status ──{RESET}"
-    );
+    println!("\n{GREEN}{BOLD}  ── Routing Status ──{RESET}");
 
-    if hook_count >= 3 {
-        println!(
-            "  {GREEN}[OK]{RESET} IAT hooks installed: {hook_count} Winsock functions redirected"
-        );
+    let has = |name: &str| hooked.contains(&name);
+    let dns_hooked = has("getaddrinfo") || has("GetAddrInfoW") || has("gethostbyname");
+    let send_hooked = has("connect") || has("sendto");
+
+    if dns_hooked && send_hooked {
+        println!("  {GREEN}[ok]{RESET} IAT hooks installed: {}", hooked.join(", "));
     } else {
         println!(
-            "  {RED}[!!]{RESET} Only {hook_count} hooks installed — some traffic may leak!"
+            "  {RED}[!!]{RESET} Incomplete hooks ({}): redirection needs a DNS hook and connect/sendto",
+            if hooked.is_empty() { "none".to_string() } else { hooked.join(", ") }
         );
     }
 
     println!(
-        "  {GREEN}[OK]{RESET} Blocked hosts: Blizzard CDN, Battle.net ({} entries)",
+        "  {YELLOW}[--]{RESET} Blocked: DemonWare hosts without a local service, plus {} CDN entries",
         t9_common::dw_protocol::hostnames::BLOCKED_HOSTS.len()
     );
     println!(
-        "  {GREEN}[OK]{RESET} DemonWare redirect: all *.demonware.net → 127.0.0.1"
+        "  {YELLOW}[--]{RESET} Unhooked APIs (WSAConnect, ConnectEx, GetAddrInfoExW, IPv6) are not covered"
     );
-    println!(
-        "  {GREEN}[OK]{RESET} Anti-cheat service: ACKs all challenges locally"
-    );
-    println!(
-        "  {YELLOW}[--]{RESET} Connection audit: all connect() calls logged below"
-    );
+    println!("  {YELLOW}[--]{RESET} Connection audit: routing decisions are logged below");
     println!();
 }
 
 // ─── Real XInput Loading ────────────────────────────────────────────────────
 
 #[cfg(windows)]
-unsafe fn load_real_xinput() -> Option<windows_sys::Win32::Foundation::HMODULE> {
+unsafe fn load_real_xinput() -> Option<(windows_sys::Win32::Foundation::HMODULE, &'static str)> {
     use windows_sys::Win32::System::LibraryLoader::LoadLibraryA;
+    use windows_sys::Win32::System::SystemInformation::GetSystemDirectoryA;
 
-    // We masquerade as XINPUT9_1_0.dll, so load the REAL one from System32.
-    // Try the exact name first (what the game originally imported), then fallbacks.
-    let candidates: &[&[u8]] = &[
-        b"C:\\Windows\\System32\\XInput9_1_0.dll\0",
-        b"C:\\Windows\\System32\\XInput1_4.dll\0",
-        b"C:\\Windows\\System32\\XInput1_3.dll\0",
-    ];
+    // We masquerade as XINPUT9_1_0.dll, so load the REAL one by full path from
+    // the system directory (a bare name would load this DLL again).
+    let mut dir = [0u8; 260];
+    let len = GetSystemDirectoryA(dir.as_mut_ptr(), dir.len() as u32) as usize;
+    if len == 0 || len >= dir.len() {
+        return None;
+    }
+    let dir = String::from_utf8_lossy(&dir[..len]).into_owned();
 
-    for path in candidates {
+    // Try the exact name first (what the game imports), then fallbacks.
+    for name in ["XInput9_1_0.dll", "XInput1_4.dll", "XInput1_3.dll"] {
+        let path = format!("{}\\{}\0", dir, name);
         let handle = LoadLibraryA(path.as_ptr());
         if handle != 0 {
-            return Some(handle);
+            return Some((handle, name));
         }
     }
     None

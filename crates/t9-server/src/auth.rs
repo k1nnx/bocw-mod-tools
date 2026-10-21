@@ -85,8 +85,6 @@ pub async fn run_login_service(config: ServerConfig) -> Result<()> {
 }
 
 fn handle_http_request(config: &ServerConfig, request: &str) -> String {
-    let b64 = base64::engine::general_purpose::STANDARD;
-
     // Handle REST login service endpoints
     if request.contains("/v1/login/") {
         info!("[auth] Login service REST request");
@@ -111,7 +109,6 @@ fn handle_http_request(config: &ServerConfig, request: &str) -> String {
     }
 
     // Default 200 OK
-    let _ = b64;
     "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n".to_string()
 }
 
@@ -273,4 +270,96 @@ fn chrono_lite_date() -> String {
         .unwrap()
         .as_secs();
     format!("timestamp-{}", now)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn config() -> ServerConfig {
+        ServerConfig {
+            username: "tester".into(),
+            user_id: 0x0102030405060708,
+            bind_addr: "127.0.0.1".into(),
+            title_id: 27551,
+        }
+    }
+
+    /// Split a response into (status line, body) and check Content-Length.
+    fn parse_response(response: &str) -> (&str, &str) {
+        let (head, body) = response.split_once("\r\n\r\n").expect("header terminator");
+        let length = head
+            .lines()
+            .find_map(|l| l.strip_prefix("Content-Length: "))
+            .expect("Content-Length header")
+            .parse::<usize>()
+            .unwrap();
+        assert_eq!(length, body.len());
+        (head.lines().next().unwrap(), body)
+    }
+
+    fn decode(value: &Value) -> Vec<u8> {
+        base64::engine::general_purpose::STANDARD
+            .decode(value.as_str().unwrap())
+            .unwrap()
+    }
+
+    fn assert_client_ticket(ticket: &[u8], cfg: &ServerConfig) {
+        assert_eq!(ticket.len(), 128);
+        assert_eq!(u32::from_le_bytes(ticket[0..4].try_into().unwrap()), 0xEFBDADDE);
+        assert_eq!(u32::from_le_bytes(ticket[5..9].try_into().unwrap()), cfg.title_id);
+        let issued = u32::from_le_bytes(ticket[9..13].try_into().unwrap());
+        let expires = u32::from_le_bytes(ticket[13..17].try_into().unwrap());
+        assert_eq!(expires - issued, 30000);
+        assert_eq!(u64::from_le_bytes(ticket[25..33].try_into().unwrap()), cfg.user_id);
+        assert_eq!(&ticket[33..39], b"tester");
+        assert_eq!(&ticket[97..121], t9_common::SESSION_KEY);
+    }
+
+    #[test]
+    fn ticket_layout_is_128_bytes() {
+        assert_eq!(std::mem::size_of::<AuthTicket>(), 128);
+    }
+
+    #[test]
+    fn rest_login_points_lsg_at_local_lobby() {
+        let cfg = config();
+        let request = "GET /v1/login/steam/?titleID=27551&client=pc HTTP/1.1\r\nHost: loginservice.prod.demonware.net\r\n\r\n";
+        let response = handle_http_request(&cfg, request);
+        let (status, body) = parse_response(&response);
+        assert_eq!(status, "HTTP/1.1 200 OK");
+
+        let json: Value = serde_json::from_str(body).unwrap();
+        assert_eq!(json["lsg"]["host"], "127.0.0.1:3200");
+        assert_eq!(json["title"]["titleID"], 27551);
+        assert_eq!(json["uno"]["username"], "tester");
+        assert_client_ticket(&decode(&json["token"]), &cfg);
+        assert_eq!(&decode(&json["serverTicket"])[..24], t9_common::SESSION_KEY);
+    }
+
+    #[test]
+    fn other_api_paths_get_generic_success() {
+        let response = handle_http_request(&config(), "GET /v2/users/1/objects/x HTTP/1.1\r\n\r\n");
+        let (status, body) = parse_response(&response);
+        assert_eq!(status, "HTTP/1.1 200 OK");
+        assert_eq!(body, r#"{"status":"ok"}"#);
+
+        let response = handle_http_request(&config(), "GET / HTTP/1.1\r\n\r\n");
+        assert_eq!(parse_response(&response).1, "");
+    }
+
+    #[test]
+    fn auth3_json_request_is_answered() {
+        let cfg = config();
+        let body = json!({"title_id": "27551", "iv_seed": "1234", "identity": "abc"});
+        let response = handle_auth_request(&cfg, &body);
+        let (status, body) = parse_response(&response);
+        assert_eq!(status, "HTTP/1.1 200 OK");
+
+        let json: Value = serde_json::from_str(body).unwrap();
+        assert_eq!(json["iv_seed"], "1234");
+        assert_eq!(json["identity"], "abc");
+        assert_eq!(json["code"], "700");
+        assert_client_ticket(&decode(&json["client_ticket"]), &cfg);
+    }
 }

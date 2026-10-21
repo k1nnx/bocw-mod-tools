@@ -7,6 +7,7 @@ pub struct BinaryPatch {
     pub offset: usize,
     pub original: Vec<u8>,
     pub replacement: Vec<u8>,
+    #[serde(default)]
     pub description: String,
 }
 
@@ -14,7 +15,9 @@ pub struct BinaryPatch {
 pub struct StringPatch {
     pub search: String,
     pub replace: String,
+    #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub max_occurrences: Option<usize>,
 }
 
@@ -22,7 +25,9 @@ pub struct StringPatch {
 pub struct PatchSet {
     pub name: String,
     pub target_zone: String,
+    #[serde(default)]
     pub binary_patches: Vec<BinaryPatch>,
+    #[serde(default)]
     pub string_patches: Vec<StringPatch>,
 }
 

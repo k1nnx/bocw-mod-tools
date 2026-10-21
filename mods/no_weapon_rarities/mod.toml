@@ -1,0 +1,31 @@
+[mod]
+id = "no_weapon_rarities"
+name = "No Weapon Rarities"
+version = "1.0.0"
+author = "bocw-mod-tools"
+description = "Removes the weapon rarity/color tier system from Zombies. All weapons in the Mystery Box are treated equally - no more blue/green/orange/purple tiers."
+category = "zombies"
+target_zones = ["zm_common"]
+
+[[options]]
+id = "disable_rarity_map"
+label = "Disable Rarity Map"
+type = "toggle"
+default = true
+description = "Neutralizes the weapon_rarity_map_list lookup so no rarity tiers are applied"
+
+[[options]]
+id = "disable_upgraded_rarity"
+label = "Disable Upgraded Rarity"
+type = "toggle"
+default = true
+description = "Also neutralizes the weapon_upgraded_rarity_map_list for Pack-a-Punch'd weapons"
+
+# Each patch set applies only while its option is on.
+[[patches]]
+file = "patches/rarity_map.toml"
+condition = "disable_rarity_map"
+
+[[patches]]
+file = "patches/upgraded_rarity_map.toml"
+condition = "disable_upgraded_rarity"

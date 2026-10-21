@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::collections::{BTreeMap, HashMap};
+use std::path::{Component, Path, PathBuf};
 
 
 const MODS_DIR_NAME: &str = "bocw_mods";
@@ -79,16 +79,60 @@ impl OptionValue {
             OptionValue::Bool(b) => if *b { "true" } else { "false" }.to_string(),
             OptionValue::Float(f) => format!("{}", f),
             OptionValue::Int(i) => format!("{}", i),
-            OptionValue::Str(s) => format!("\"{}\"", s),
+            OptionValue::Str(s) => gsc_string(s),
         }
     }
+
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            OptionValue::Bool(b) => *b,
+            OptionValue::Float(f) => *f != 0.0,
+            OptionValue::Int(i) => *i != 0,
+            OptionValue::Str(s) => !s.is_empty(),
+        }
+    }
+}
+
+/// Quote `s` as a GSC string literal.
+pub fn gsc_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => {}
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModPatchRef {
     pub file: String,
+    /// Option id that must be truthy for the patch to apply; `!id` inverts it.
     #[serde(default)]
     pub condition: Option<String>,
+}
+
+impl ModPatchRef {
+    pub fn is_enabled(&self, values: &HashMap<String, OptionValue>) -> Result<bool> {
+        let Some(condition) = self.condition.as_deref().map(str::trim).filter(|c| !c.is_empty())
+        else {
+            return Ok(true);
+        };
+        let (negate, id) = match condition.strip_prefix('!') {
+            Some(id) => (true, id.trim()),
+            None => (false, condition),
+        };
+        let value = values.get(id).with_context(|| {
+            format!("Patch '{}': condition refers to unknown option '{}'", self.file, id)
+        })?;
+        Ok(value.is_truthy() != negate)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -139,6 +183,17 @@ pub fn init_mod_dirs() -> Result<()> {
     std::fs::create_dir_all(installed_mods_dir())?;
     std::fs::create_dir_all(profiles_dir())?;
     Ok(())
+}
+
+/// Resolve a file named in a manifest, refusing paths that leave the mod directory.
+pub fn mod_file_path(mod_dir: &Path, relative: &str) -> Result<PathBuf> {
+    let path = Path::new(relative);
+    if path.as_os_str().is_empty()
+        || !path.components().all(|c| matches!(c, Component::Normal(_)))
+    {
+        bail!("Expected a path inside the mod directory: {}", relative);
+    }
+    Ok(mod_dir.join(path))
 }
 
 pub fn load_mod(mod_dir: &Path) -> Result<ModManifest> {
@@ -226,6 +281,7 @@ pub fn generate_mod_menu_gsc(active_mods: &[(ModManifest, HashMap<String, Option
     gsc.push_str("// In-game mod menu HUD\n\n");
 
     // Main init function
+    gsc.push_str("#using scripts\\core_common\\callbacks_shared;\n");
     gsc.push_str("#using scripts\\core_common\\util_shared;\n\n");
     gsc.push_str("function autoexec mod_menu_init() {\n");
     gsc.push_str("    level.mod_menu = spawnStruct();\n");
@@ -246,20 +302,20 @@ pub fn generate_mod_menu_gsc(active_mods: &[(ModManifest, HashMap<String, Option
             i
         ));
         gsc.push_str(&format!(
-            "    level.mod_menu.mods[{}].name = \"{}\";\n",
-            i, manifest.info.name
+            "    level.mod_menu.mods[{}].name = {};\n",
+            i, gsc_string(&manifest.info.name)
         ));
         gsc.push_str(&format!(
-            "    level.mod_menu.mods[{}].author = \"{}\";\n",
-            i, manifest.info.author
+            "    level.mod_menu.mods[{}].author = {};\n",
+            i, gsc_string(&manifest.info.author)
         ));
         gsc.push_str(&format!(
-            "    level.mod_menu.mods[{}].version = \"{}\";\n",
-            i, manifest.info.version
+            "    level.mod_menu.mods[{}].version = {};\n",
+            i, gsc_string(&manifest.info.version)
         ));
         gsc.push_str(&format!(
-            "    level.mod_menu.mods[{}].desc = \"{}\";\n",
-            i, manifest.info.description.replace('"', "\\\"")
+            "    level.mod_menu.mods[{}].desc = {};\n",
+            i, gsc_string(&manifest.info.description)
         ));
 
         // Register options for this mod
@@ -277,12 +333,12 @@ pub fn generate_mod_menu_gsc(active_mods: &[(ModManifest, HashMap<String, Option
                 i, j
             ));
             gsc.push_str(&format!(
-                "    level.mod_menu.mods[{}].options[{}].id = \"{}\";\n",
-                i, j, opt.id
+                "    level.mod_menu.mods[{}].options[{}].id = {};\n",
+                i, j, gsc_string(&opt.id)
             ));
             gsc.push_str(&format!(
-                "    level.mod_menu.mods[{}].options[{}].label = \"{}\";\n",
-                i, j, opt.label
+                "    level.mod_menu.mods[{}].options[{}].label = {};\n",
+                i, j, gsc_string(&opt.label)
             ));
             gsc.push_str(&format!(
                 "    level.mod_menu.mods[{}].options[{}].type = \"{}\";\n",
@@ -424,11 +480,15 @@ pub fn generate_mod_menu_gsc(active_mods: &[(ModManifest, HashMap<String, Option
     // Refresh display
     gsc.push_str("function refresh_menu_display() {\n");
     gsc.push_str("    // Clear old item HUD elements (keep bg, title, hint = first 3)\n");
-    gsc.push_str("    while (level.mod_menu.hud_elements.size > 3) {\n");
-    gsc.push_str("        idx = level.mod_menu.hud_elements.size - 1;\n");
-    gsc.push_str("        level.mod_menu.hud_elements[idx] destroy();\n");
-    gsc.push_str("        // Remove from array\n");
-    gsc.push_str("    }\n\n");
+    gsc.push_str("    kept = [];\n");
+    gsc.push_str("    for (i = 0; i < level.mod_menu.hud_elements.size; i++) {\n");
+    gsc.push_str("        if (i < 3) {\n");
+    gsc.push_str("            kept[kept.size] = level.mod_menu.hud_elements[i];\n");
+    gsc.push_str("        } else {\n");
+    gsc.push_str("            level.mod_menu.hud_elements[i] destroy();\n");
+    gsc.push_str("        }\n");
+    gsc.push_str("    }\n");
+    gsc.push_str("    level.mod_menu.hud_elements = kept;\n\n");
     gsc.push_str("    y_pos = 48;\n");
     gsc.push_str("    item_index = 0;\n\n");
     gsc.push_str("    for (m = 0; m < level.mod_menu.mod_count; m++) {\n");
@@ -654,7 +714,7 @@ pub fn link_mod_scripts(
 pub fn insert_offline_guard(source: &str) -> String {
     let guard = r#"
 // Offline-only safety guard
-function private __bocw_mod_guard() {
+function autoexec __bocw_mod_guard() {
     if (!isDefined(level.mod_menu)) return;
     if (getDvarString("online_enabled") == "1") {
         iPrintLnBold("^1MODS DISABLED: Online play detected");
@@ -664,6 +724,71 @@ function private __bocw_mod_guard() {
 "#;
 
     format!("{}\n{}", source, guard)
+}
+
+/// `[[[id]]]` markers left after substitution, i.e. ids with no option value.
+pub fn unresolved_markers(source: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    let mut rest = source;
+    while let Some(start) = rest.find("[[[") {
+        let after = &rest[start + 3..];
+        match after.find("]]]") {
+            Some(end) => {
+                found.push(after[..end].to_string());
+                rest = &after[end + 3..];
+            }
+            None => break,
+        }
+    }
+    found
+}
+
+/// One mod's scripts for one zone after Substitute → Link → Guard.
+#[derive(Debug, Clone)]
+pub struct BuiltScript {
+    pub mod_id: String,
+    pub target_zone: String,
+    pub source: String,
+}
+
+pub fn build_mod_scripts(
+    mod_dir: &Path,
+    manifest: &ModManifest,
+    values: &HashMap<String, OptionValue>,
+) -> Result<Vec<BuiltScript>> {
+    let mut by_zone: BTreeMap<&str, Vec<(String, String)>> = BTreeMap::new();
+
+    for script in &manifest.scripts {
+        let path = mod_file_path(mod_dir, &script.file)?;
+        let source = std::fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read script {}", path.display()))?;
+        let substituted = substitute_settings_markers(&source, values);
+        let unresolved = unresolved_markers(&substituted);
+        if !unresolved.is_empty() {
+            bail!(
+                "Script {} uses unknown setting marker(s): {}",
+                script.file,
+                unresolved.join(", ")
+            );
+        }
+        by_zone
+            .entry(script.target_zone.as_str())
+            .or_default()
+            .push((script.file.clone(), substituted));
+    }
+
+    Ok(by_zone
+        .into_iter()
+        .map(|(zone, scripts)| BuiltScript {
+            mod_id: manifest.info.id.clone(),
+            target_zone: zone.to_string(),
+            source: insert_offline_guard(&link_mod_scripts(
+                &manifest.info.id,
+                &manifest.info.id,
+                &scripts,
+            )),
+        })
+        .collect())
 }
 
 // ─── Conflict detection ─────────────────────────────────────────────────────
@@ -748,4 +873,153 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::patch;
+
+    fn sample_mod_dir() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("mods/no_weapon_rarities")
+    }
+
+    fn values(pairs: &[(&str, OptionValue)]) -> HashMap<String, OptionValue> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
+    }
+
+    struct TempDir(PathBuf);
+
+    impl TempDir {
+        fn new(tag: &str) -> Self {
+            let path = std::env::temp_dir().join(format!(
+                "bocw_mod_manager_{}_{}_{}",
+                tag,
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            std::fs::create_dir_all(&path).unwrap();
+            Self(path)
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn sample_mod_matches_current_schemas() {
+        let dir = sample_mod_dir();
+        let manifest = load_mod(&dir).unwrap();
+        assert_eq!(manifest.info.id, "no_weapon_rarities");
+        assert_eq!(manifest.info.target_zones, ["zm_common"]);
+
+        let defaults = PresetStore::new(&manifest.info.id).get_active_values(&manifest);
+        assert_eq!(manifest.patches.len(), 2);
+        for patch_ref in &manifest.patches {
+            assert!(patch_ref.is_enabled(&defaults).unwrap());
+            let set = patch::load_patch_set(&mod_file_path(&dir, &patch_ref.file).unwrap()).unwrap();
+            assert!(manifest.info.target_zones.contains(&set.target_zone));
+            assert!(!set.string_patches.is_empty());
+            for sp in &set.string_patches {
+                assert_eq!(sp.search.len(), sp.replace.len(), "{}", sp.search);
+            }
+        }
+    }
+
+    #[test]
+    fn patch_conditions() {
+        let on = values(&[("a", OptionValue::Bool(true)), ("b", OptionValue::Float(0.0))]);
+        let patch = |condition: Option<&str>| ModPatchRef {
+            file: "p.toml".into(),
+            condition: condition.map(String::from),
+        };
+        assert!(patch(None).is_enabled(&on).unwrap());
+        assert!(patch(Some(" ")).is_enabled(&on).unwrap());
+        assert!(patch(Some("a")).is_enabled(&on).unwrap());
+        assert!(!patch(Some("!a")).is_enabled(&on).unwrap());
+        assert!(!patch(Some("b")).is_enabled(&on).unwrap());
+        assert!(patch(Some("! b")).is_enabled(&on).unwrap());
+        assert!(patch(Some("missing")).is_enabled(&on).is_err());
+    }
+
+    #[test]
+    fn gsc_strings_are_escaped() {
+        assert_eq!(gsc_string(r#"say "hi"\now"#), r#""say \"hi\"\\now""#);
+        assert_eq!(gsc_string("a\r\nb"), r#""a\nb""#);
+        assert_eq!(OptionValue::Str("x\"y".into()).to_gsc_literal(), r#""x\"y""#);
+    }
+
+    #[test]
+    fn mod_menu_escapes_text_and_refresh_terminates() {
+        let mut manifest = load_mod(&sample_mod_dir()).unwrap();
+        manifest.info.name = "Quote \"Mod\"".into();
+        manifest.options[0].label = "Label \"1\"".into();
+        let defaults = PresetStore::new("x").get_active_values(&manifest);
+        let gsc = generate_mod_menu_gsc(&[(manifest, defaults)]);
+
+        assert!(gsc.contains(r#"level.mod_menu.mods[0].name = "Quote \"Mod\"";"#));
+        assert!(gsc.contains(r#"options[0].label = "Label \"1\"";"#));
+        assert!(gsc.contains("#using scripts\\core_common\\callbacks_shared;"));
+        // The old refresh loop destroyed elements without shrinking the array.
+        assert!(!gsc.contains("while (level.mod_menu.hud_elements.size > 3)"));
+        assert!(gsc.contains("level.mod_menu.hud_elements = kept;"));
+    }
+
+    #[test]
+    fn scripts_build_through_substitute_link_guard() {
+        let dir = TempDir::new("scripts");
+        std::fs::create_dir_all(dir.0.join("scripts")).unwrap();
+        std::fs::write(
+            dir.0.join("scripts/main.gsc"),
+            "#namespace old;\n/*[[[SETTINGS]]] speed: slider [[[/SETTINGS]]]*/\nfunction f() { return [[[speed]]]; }\n",
+        )
+        .unwrap();
+        std::fs::write(dir.0.join("scripts/other.gsc"), "function g() { return [[[label]]]; }\n").unwrap();
+
+        let script = |file: &str, zone: &str| ModScript {
+            file: file.into(),
+            target_zone: zone.into(),
+            inject_point: String::new(),
+        };
+        let mut manifest = load_mod(&sample_mod_dir()).unwrap();
+        manifest.info.id = "speed_mod".into();
+        manifest.scripts = vec![
+            script("scripts/main.gsc", "zm_common"),
+            script("scripts/other.gsc", "zm_common"),
+        ];
+        let vals = values(&[
+            ("speed", OptionValue::Float(2.5)),
+            ("label", OptionValue::Str("fast".into())),
+        ]);
+
+        let built = build_mod_scripts(&dir.0, &manifest, &vals).unwrap();
+        assert_eq!(built.len(), 1);
+        let source = &built[0].source;
+        assert_eq!(built[0].target_zone, "zm_common");
+        assert!(source.starts_with("#namespace speed_mod;"));
+        assert!(!source.contains("#namespace old;"));
+        assert!(!source.contains("SETTINGS"));
+        assert!(source.contains("return 2.5;"));
+        assert!(source.contains(r#"return "fast";"#));
+        assert!(source.contains("function autoexec __bocw_mod_guard()"));
+
+        let partial = values(&[("speed", OptionValue::Float(1.0))]);
+        let err = build_mod_scripts(&dir.0, &manifest, &partial).unwrap_err();
+        assert!(err.to_string().contains("label"), "{err}");
+
+        manifest.scripts = vec![script("../escape.gsc", "zm_common")];
+        assert!(build_mod_scripts(&dir.0, &manifest, &vals).is_err());
+    }
+
+    #[test]
+    fn finds_unresolved_markers() {
+        assert_eq!(unresolved_markers("a [[[x]]] b [[[y]]] [[[z"), ["x", "y"]);
+        assert!(unresolved_markers("plain").is_empty());
+    }
 }

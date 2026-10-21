@@ -80,11 +80,19 @@ T9 uses a REST-based login service rather than BO4's raw auth3 JSON:
 
 ## DLL Import Analysis
 
-### Proxy DLL Target: XInput1_0.dll
+### Proxy DLL Target: XINPUT9_1_0.dll
+
+> **Correction (2026-10-21):** this section originally named `XInput1_0.dll`.
+> That is treated as a misread: Windows ships no `XInput1_0.dll` (only
+> `xinput1_1`–`xinput1_4` and `xinput9_1_0`), and a proxy installed as
+> `XINPUT9_1_0.dll` was observed loading in the game process
+> (`docs/connection-diagnostics.md`). The code now uses `XINPUT9_1_0.dll`
+> everywhere (`t9_common::dw_protocol::proxy::DLL_NAME`). Re-check the import
+> table of the current build before relying on this.
+
 The game imports:
-- `XInputSetState` from `XInput1_0.dll`
-- `XInputGetState` from `XInput1_0.dll`
-- Note: BO4 used `XInput9_1_0.dll` — different version!
+- `XInputSetState` from `XINPUT9_1_0.dll`
+- `XInputGetState` from `XINPUT9_1_0.dll`
 
 ### Winsock Imports (what we hook)
 From `WS2_32.dll`:
@@ -126,7 +134,7 @@ From `WS2_32.dll`:
 | Feature | BO4 (T8) | BOCW (T9) |
 |---------|----------|-----------|
 | Codename | ops4 | navyblue |
-| Proxy DLL | XInput9_1_0.dll | XInput1_0.dll |
+| Proxy DLL | XInput9_1_0.dll | XINPUT9_1_0.dll (see correction above) |
 | Auth | Raw auth3 JSON endpoint | REST login service API |
 | Lobby hostname | Fixed: ops4-pc-lobby.prod.demonware.net | Dynamic: returned as lsg_endpoint |
 | STUN prefix | ops4-stun.* | stun.* (no prefix) |

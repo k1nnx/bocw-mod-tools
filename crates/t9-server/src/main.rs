@@ -8,7 +8,7 @@ mod config;
 
 use anyhow::Result;
 use colored::Colorize;
-use t9_common::dw_protocol::ports;
+use t9_common::dw_protocol::{LocalService, Transport};
 use tracing::{info, error};
 
 #[tokio::main]
@@ -204,22 +204,20 @@ fn print_service_status() {
         "── Services ──".cyan().bold()
     );
 
-    let services = [
-        ("Auth / Login Service", ports::LOGIN_SERVICE, "TCP"),
-        ("Lobby Server", ports::LOBBY, "TCP"),
-        ("STUN Server", ports::STUN, "UDP"),
-        ("Umbrella", ports::UMBRELLA, "TCP"),
-    ];
-
-    for (name, port, proto) in &services {
-        let reachable = if *proto == "UDP" {
-            None // A TCP probe cannot verify a UDP listener.
-        } else {
-            Some(std::net::TcpStream::connect_timeout(
-                &format!("127.0.0.1:{}", port).parse().unwrap(),
-                std::time::Duration::from_millis(100),
-            )
-            .is_ok())
+    for service in LocalService::ALL {
+        let (name, port) = (service.name(), service.port());
+        let (proto, reachable) = match service.transport() {
+            Transport::Udp => ("UDP", None), // A TCP probe cannot verify a UDP listener.
+            Transport::Tcp => (
+                "TCP",
+                Some(
+                    std::net::TcpStream::connect_timeout(
+                        &format!("127.0.0.1:{}", port).parse().unwrap(),
+                        std::time::Duration::from_millis(100),
+                    )
+                    .is_ok(),
+                ),
+            ),
         };
 
         if reachable == Some(true) {
